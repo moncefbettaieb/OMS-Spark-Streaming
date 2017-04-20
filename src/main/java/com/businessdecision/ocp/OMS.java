@@ -82,7 +82,7 @@ public final class OMS {
                     String factor = obj.getString("factor");
                     String result = status+","+date+","+gpk+","+rms+","+pom+","+extTemp+","+taskId+","+factor;
                     Properties prop = new Properties();
-                    prop.put("metadata.broker.list", "localhost:9092");
+                    prop.put("bootstrap.servers", "10.21.62.48:9092");
                     prop.put("serializer.class", "kafka.serializer.StringEncoder");
                     prop.put("request.required.acks", "1");
                     KafkaProducer producer = new KafkaProducer<String,String>(prop);
