@@ -75,7 +75,7 @@ public final class OMS {
                     String extTemp = obj.getJSONObject("values").getString("exttemp");
                     String taskId = obj.getJSONObject("taskid").getString("$oid");
                     String factor = obj.getString("factor");
-                    String result = status+date+gpk+rms+pom+extTemp+taskId+factor;
+                    String result = status+","+date+","+gpk+","+rms+","+pom+","+extTemp+","+taskId+","+factor;
                     return result;
                 }
                 catch (JSONException e){
