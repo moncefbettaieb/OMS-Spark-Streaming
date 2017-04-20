@@ -90,7 +90,7 @@ public final class OMS {
                     props.put(ProducerConfig.BATCH_SIZE_CONFIG, 200);
                     props.put(ProducerConfig.BLOCK_ON_BUFFER_FULL_CONFIG, true);
                     props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-                    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
+                    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
                     KafkaProducer producer = new KafkaProducer<String,String>(props);
                     producer.send(new ProducerRecord<String, String>("events",
                             result));
