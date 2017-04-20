@@ -65,7 +65,18 @@ public final class OMS {
                 try {
                     JSONObject obj = new JSONObject(tuple2._2());
                     String status = obj.getString("status");
-                    return status;
+                    String date = obj.getJSONObject("end").getString("$date");
+                    String gpk = "";
+                    String rms = "";
+                    JSONArray arr = obj.getJSONArray("globals");
+                    gpk = arr.getString(0);
+                    rms = arr.getString(1);
+                    String pom = obj.getJSONObject("pom").getString("$oid");
+                    String extTemp = obj.getJSONObject("values").getString("exttemp");
+                    String taskId = obj.getJSONObject("taskid").getString("$oid");
+                    String factor = obj.getString("factor");
+                    String result = status+date+gpk+rms+pom+extTemp+taskId+factor;
+                    return result;
                 }
                 catch (JSONException e){
                     return "" ;
