@@ -3,7 +3,12 @@ package com.businessdecision.ocp;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Properties;
 import java.util.regex.Pattern;
+
+import kafka.producer.KeyedMessage;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.json.*;
 
 import org.apache.spark.streaming.Durations;
@@ -76,6 +81,13 @@ public final class OMS {
                     String taskId = obj.getJSONObject("taskid").getString("$oid");
                     String factor = obj.getString("factor");
                     String result = status+","+date+","+gpk+","+rms+","+pom+","+extTemp+","+taskId+","+factor;
+                    Properties prop = new Properties();
+                    prop.put("metadata.broker.list", "localhost:9092");
+                    prop.put("serializer.class", "kafka.serializer.StringEncoder");
+                    prop.put("request.required.acks", "1");
+                    KafkaProducer producer = new KafkaProducer<String,String>(prop);
+                    producer.send(new ProducerRecord<String, String>("events",
+                            result));
                     return result;
                 }
                 catch (JSONException e){
