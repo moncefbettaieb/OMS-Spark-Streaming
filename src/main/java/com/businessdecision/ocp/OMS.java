@@ -62,9 +62,14 @@ public final class OMS {
 
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
-                JSONObject obj = new JSONObject(tuple2._2());
-                String status = obj.getString("status");
-                return status;
+                try {
+                    JSONObject obj = new JSONObject(tuple2._2());
+                    String status = obj.getString("status");
+                    return status;
+                }
+                catch (JSONException e){
+                    return "" ;
+                }
             }
         });
 
