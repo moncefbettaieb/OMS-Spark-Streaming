@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import kafka.producer.KeyedMessage;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.json.*;
 
@@ -81,11 +82,16 @@ public final class OMS {
                     String taskId = obj.getJSONObject("taskid").getString("$oid");
                     String factor = obj.getString("factor");
                     String result = status+","+date+","+gpk+","+rms+","+pom+","+extTemp+","+taskId+","+factor;
-                    Properties prop = new Properties();
-                    prop.put("bootstrap.servers", "10.21.62.48:9092");
-                    prop.put("serializer.class", "kafka.serializer.StringEncoder");
-                    prop.put("request.required.acks", "1");
-                    KafkaProducer producer = new KafkaProducer<String,String>(prop);
+                    Properties props = new Properties();
+                    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.21.62.48:9092");
+                    props.put(ProducerConfig.RETRIES_CONFIG, "3");
+                    props.put(ProducerConfig.ACKS_CONFIG, "all");
+                    props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "none");
+                    props.put(ProducerConfig.BATCH_SIZE_CONFIG, 200);
+                    props.put(ProducerConfig.BLOCK_ON_BUFFER_FULL_CONFIG, true);
+                    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+                    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.ByteArraySerializer");
+                    KafkaProducer producer = new KafkaProducer<String,String>(props);
                     producer.send(new ProducerRecord<String, String>("events",
                             result));
                     return result;
