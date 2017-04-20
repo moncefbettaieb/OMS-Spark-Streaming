@@ -2,7 +2,6 @@ package com.businessdecision.ocp;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 
@@ -59,12 +58,18 @@ public final class OMS {
                 topicsSet
         );
 
-        // Get the lines, split them into words, count the words and print
+
+
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
+                System.out.println(tuple2._2());
                 return tuple2._2();
             }
         });
+
+        System.out.println(" line is  0------ 0"+ lines);
+
+
         JavaDStream<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
             public Iterable<String> call(String x) {
                 return Lists.newArrayList(dot.split(x));
@@ -83,7 +88,6 @@ public final class OMS {
                 });
         wordCounts.print();
 
-        // Start the computation
         jssc.start();
         jssc.awaitTermination();
     }
