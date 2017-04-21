@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
-import kafka.producer.KeyedMessage;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -16,12 +15,8 @@ import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.*;
 import scala.Tuple2;
 
-import com.google.common.collect.Lists;
 import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
-import org.apache.spark.api.java.function.Function2;
-import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.streaming.kafka.KafkaUtils;
 import kafka.serializer.StringDecoder;
 
@@ -45,7 +40,6 @@ public final class OMS {
         String brokers = args[0];
         String topics = args[1];
 
-        // Create context with a 2 seconds batch interval
         SparkConf sparkConf = new SparkConf().setAppName("OMS Maintenance Spark Streaming");
         JavaStreamingContext jssc = new JavaStreamingContext(sparkConf, Durations.seconds(2));
 
@@ -53,7 +47,6 @@ public final class OMS {
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
         kafkaParams.put("metadata.broker.list", brokers);
 
-        // Create direct kafka stream with brokers and topics
         JavaPairInputDStream<String, String> messages = KafkaUtils.createDirectStream(
                 jssc,
                 String.class,
@@ -63,8 +56,6 @@ public final class OMS {
                 kafkaParams,
                 topicsSet
         );
-
-
 
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
@@ -89,7 +80,7 @@ public final class OMS {
                     props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "none");
                     props.put(ProducerConfig.BATCH_SIZE_CONFIG, 200);
                     props.put(ProducerConfig.BLOCK_ON_BUFFER_FULL_CONFIG, true);
-                    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+                    props.put(ProducerConfig.KEYx_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
                     props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
                     KafkaProducer producer = new KafkaProducer<String,String>(props);
                     producer.send(new ProducerRecord<String, String>("events",
@@ -101,30 +92,7 @@ public final class OMS {
                 }
             }
         });
-
         lines.print();
-
-        System.out.println(" line is  0------ 0"+ lines);
-
-
-
-        JavaDStream<String> words = lines.flatMap(new FlatMapFunction<String, String>() {
-            public Iterable<String> call(String x) {
-                return Lists.newArrayList(dot.split(x));
-            }
-        });
-        JavaPairDStream<String, Integer> wordCounts = words.mapToPair(
-                new PairFunction<String, String, Integer>() {
-                    public Tuple2<String, Integer> call(String s) {
-                        return new Tuple2<String, Integer>(s, 1);
-                    }
-                }).reduceByKey(
-                new Function2<Integer, Integer, Integer>() {
-                    public Integer call(Integer i1, Integer i2) {
-                        return i1 + i2;
-                    }
-                });
-        //wordCounts.print();
 
         jssc.start();
         jssc.awaitTermination();
