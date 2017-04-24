@@ -21,6 +21,7 @@ import org.json.*;
 
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.*;
+import org.tukaani.xz.LZMA2InputStream;
 import scala.Tuple2;
 
 import org.apache.spark.SparkConf;
@@ -75,7 +76,7 @@ public final class OMS {
                     );
                     //final InputStream sourceIn = new BufferedInputStream(new FileInputStream(sourceFile));
 
-                    BufferedInputStream in = new BufferedInputStream(stream);
+                    LZMA2InputStream in = new LZMA2InputStream(stream,100);
                     XZCompressorInputStream xzIn = new XZCompressorInputStream(in);
                     ByteArrayOutputStream  out = new ByteArrayOutputStream();
                     final byte[] buffer = new byte[Integer.MAX_VALUE];
