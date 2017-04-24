@@ -21,13 +21,16 @@ import org.json.*;
 
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.*;
-import org.tukaani.xz.LZMA2InputStream;
 import scala.Tuple2;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.streaming.kafka.KafkaUtils;
 import kafka.serializer.StringDecoder;
+
+import org.tukaani.xz.XZ;
+import org.tukaani.xz.SingleXZInputStream;
+import org.tukaani.xz.XZInputStream;
 
 /**
  * Created by Moncef.Bettaieb on 19/04/2017.
@@ -74,25 +77,16 @@ public final class OMS {
                     InputStream stream = new ByteArrayInputStream(
                             tuple2._2().getBytes("UTF-8")
                     );
-                    //final InputStream sourceIn = new BufferedInputStream(new FileInputStream(sourceFile));
+                    XZInputStream inxz = new XZInputStream(stream);
+                    //outString = inxz.toString();
 
-                    LZMA2InputStream in = new LZMA2InputStream(stream,100);
-                    XZCompressorInputStream xzIn = new XZCompressorInputStream(in);
-                    ByteArrayOutputStream  out = new ByteArrayOutputStream();
-                    final byte[] buffer = new byte[Integer.MAX_VALUE];
-                    int n = 0;
-
-                    while (-1 != (n = xzIn.read(buffer))) {
-                        //out += buffer.toString();
-                        //buffer.toString();
-                        out.write(buffer, 0, n);
-                        //outString = buffer.();
-
-                    }
-                    out.close();
-                    xzIn.close();
-                    outString = new String(out.toByteArray());
-                    return outString;
+                    byte firstByte = (byte) inxz.read();
+                    byte[] buffer = new byte[inxz.available()];
+                    buffer[0] = firstByte;
+                    inxz.read(buffer, 1, buffer.length - 2);
+                    inxz.close();
+                    return new String(buffer);
+                    //return outString;
                 } catch (IOException e) {
                     System.out.println(e);
                     e.printStackTrace();
