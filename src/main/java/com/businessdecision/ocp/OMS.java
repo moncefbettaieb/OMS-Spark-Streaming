@@ -71,8 +71,9 @@ public final class OMS {
                 String outString = "";
                 try {
                     InputStream stream = new ByteArrayInputStream(
-                            tuple2._2().getBytes()
+                            tuple2._2().getBytes("UTF-8")
                     );
+                    final InputStream sourceIn = new BufferedInputStream(new FileInputStream(sourceFile));
 
                     BufferedInputStream in = new BufferedInputStream(stream);
                     XZCompressorInputStream xzIn = new XZCompressorInputStream(in);
@@ -87,6 +88,8 @@ public final class OMS {
                         //outString = buffer.();
 
                     }
+                    out.close();
+                    xzIn.close();
                     outString = new String(out.toByteArray());
                     return outString;
                 } catch (IOException e) {
