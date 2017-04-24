@@ -68,14 +68,27 @@ public final class OMS {
 
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
-                String out = "";
+                String outString = "";
                 try {
                     InputStream stream = new ByteArrayInputStream(
                             tuple2._2().getBytes()
                     );
+
                     BufferedInputStream in = new BufferedInputStream(stream);
                     XZCompressorInputStream xzIn = new XZCompressorInputStream(in);
-                    return "";
+                    ByteArrayOutputStream  out = new ByteArrayOutputStream();
+                    final byte[] buffer = new byte[Integer.MAX_VALUE];
+                    int n = 0;
+
+                    while (-1 != (n = xzIn.read(buffer))) {
+                        //out += buffer.toString();
+                        //buffer.toString();
+                        out.write(buffer, 0, n);
+                        //outString = buffer.();
+
+                    }
+                    String aString = new String(out.toByteArray(),"UTF-8");
+                    return aString;
                 } catch (IOException e) {
                     System.out.println(e);
                     e.printStackTrace();
