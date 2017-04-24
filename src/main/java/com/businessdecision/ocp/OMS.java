@@ -75,19 +75,11 @@ public final class OMS {
                     );
                     BufferedInputStream in = new BufferedInputStream(stream);
                     XZCompressorInputStream xzIn = new XZCompressorInputStream(in);
-                    final byte[] buffer = new byte[Integer.MAX_VALUE];
-                    int n = 0;
-
-                    while (-1 != (n = xzIn.read(buffer))) {
-                        out += buffer.toString();
-                        //out = out.write(buffer, 0, n);
-
-                    }
-                    return out;
+                    return "";
                 } catch (IOException e) {
                     System.out.println(e);
                     e.printStackTrace();
-                    return "";
+                    return e.getMessage();
                 }
             }
         });
