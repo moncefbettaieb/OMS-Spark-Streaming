@@ -1,14 +1,17 @@
 package com.businessdecision.ocp;
 
+import java.io.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
+import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.ByteArrayDeserializer;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.json.*;
 
 import org.apache.spark.streaming.Durations;
@@ -24,7 +27,6 @@ import kafka.serializer.StringDecoder;
  * Created by Moncef.Bettaieb on 19/04/2017.
  */
 public final class OMS {
-    private static final Pattern dot = Pattern.compile(",");
     private OMS() {
     }
 
@@ -35,13 +37,12 @@ public final class OMS {
                     "  <topics> is a list of one or more kafka topics to consume from\n\n");
             System.exit(1);
         }
-
-
         String brokers = args[0];
         String topics = args[1];
 
         SparkConf sparkConf = new SparkConf().setAppName("OMS Maintenance Spark Streaming");
-        JavaStreamingContext jssc = new JavaStreamingContext(sparkConf, Durations.seconds(2));
+        JavaSparkContext conf = new JavaSparkContext(sparkConf);
+        JavaStreamingContext jssc = new JavaStreamingContext(conf, Durations.seconds(30));
 
         HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(",")));
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
@@ -60,7 +61,19 @@ public final class OMS {
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
                 try {
-                    JSONObject obj = new JSONObject(tuple2._2());
+                    InputStream stream = new ByteArrayInputStream(
+                            tuple2._2().getBytes()
+                    );
+                    BufferedInputStream in = new BufferedInputStream(stream);
+                    XZCompressorInputStream xzIn = new XZCompressorInputStream(in);
+                    final byte[] buffer = new byte[Integer.MAX_VALUE];
+                    int n = 0;
+                    String out = "";
+                    while (-1 != (n = xzIn.read(buffer))) {
+                        out = buffer.toString();
+                        //out = out.write(buffer, 0, n);
+                    }
+                    JSONObject obj = new JSONObject(out);
                     String status = obj.getString("status");
                     String date = obj.getJSONObject("end").getString("$date");
                     String gpk = "";
@@ -89,6 +102,8 @@ public final class OMS {
                 }
                 catch (JSONException e){
                     return "" ;
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });
@@ -97,5 +112,4 @@ public final class OMS {
         jssc.start();
         jssc.awaitTermination();
     }
-
 }
