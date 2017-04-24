@@ -87,12 +87,17 @@ public final class OMS {
                         //outString = buffer.();
 
                     }
-                    String aString = new String(out.toByteArray(),"UTF-8");
-                    return aString;
+                    outString = new String(out.toByteArray());
+                    return outString;
                 } catch (IOException e) {
                     System.out.println(e);
                     e.printStackTrace();
-                    return e.getMessage();
+                    return "error"+e;
+                }
+                catch (Exception ee) {
+                    System.out.println(ee);
+                    ee.printStackTrace();
+                    return "exception"+ee;
                 }
             }
         });
