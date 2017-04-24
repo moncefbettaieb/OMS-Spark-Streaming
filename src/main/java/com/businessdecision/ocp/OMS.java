@@ -70,9 +70,10 @@ public final class OMS {
                     int n = 0;
                     String out = "";
                     while (-1 != (n = xzIn.read(buffer))) {
-                        out = buffer.toString();
+                        out += buffer.toString();
                         //out = out.write(buffer, 0, n);
                     }
+                    System.out.println(out);
                     JSONObject obj = new JSONObject(out);
                     String status = obj.getString("status");
                     String date = obj.getJSONObject("end").getString("$date");
@@ -101,8 +102,10 @@ public final class OMS {
                     return result;
                 }
                 catch (JSONException e){
+                    System.out.println(e);
                     return "" ;
                 } catch (IOException e) {
+                    System.out.println(e);
                     e.printStackTrace();
                     return "";
                 }
