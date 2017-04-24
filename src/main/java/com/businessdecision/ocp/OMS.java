@@ -73,7 +73,7 @@ public final class OMS {
                     InputStream stream = new ByteArrayInputStream(
                             tuple2._2().getBytes("UTF-8")
                     );
-                    final InputStream sourceIn = new BufferedInputStream(new FileInputStream(sourceFile));
+                    //final InputStream sourceIn = new BufferedInputStream(new FileInputStream(sourceFile));
 
                     BufferedInputStream in = new BufferedInputStream(stream);
                     XZCompressorInputStream xzIn = new XZCompressorInputStream(in);
