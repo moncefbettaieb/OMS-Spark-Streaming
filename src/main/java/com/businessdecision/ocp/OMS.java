@@ -66,8 +66,8 @@ public final class OMS {
         String brokers = args[0];
         String topics = args[1];
 
-        SparkConf sparkConf = new SparkConf().setAppName("OMS Maintenance Spark Streaming");
-        JavaStreamingContext jssc = new JavaStreamingContext(sparkConf, Durations.seconds(5));
+        //SparkConf sparkConf = new SparkConf().setAppName("OMS Maintenance Spark Streaming");
+        JavaStreamingContext jssc = new JavaStreamingContext(sc, Durations.seconds(5));
 
         HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(",")));
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
