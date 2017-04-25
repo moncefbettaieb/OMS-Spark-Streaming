@@ -1,15 +1,16 @@
 package com.businessdecision.ocp;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.regex.Pattern;
+import java.util.*;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.rdd.JdbcRDD;
+import org.apache.spark.sql.DataFrame;
 import org.json.*;
+import org.apache.spark.sql.SQLContext;
 
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.*;
@@ -24,6 +25,12 @@ import kafka.serializer.StringDecoder;
  * Created by Moncef.Bettaieb on 19/04/2017.
  */
 public final class OMS {
+
+    public static final String DRIVER = "com.mysql.jdbc.Driver";
+    public static final String URL = "jdbc:mysql://10.21.62.49:3306/ocp_maint";
+    public static final String USERNAME = "root";
+    public static final String PASSWORD = "SPLXP026";
+
     private OMS() {
     }
 
@@ -35,6 +42,18 @@ public final class OMS {
             System.exit(1);
         }
 
+
+        JavaSparkContext sc =
+                new JavaSparkContext(new SparkConf().setAppName("Spark Example").setMaster("local[*]"));
+        SQLContext sqlContext = new SQLContext(sc);
+
+        Map<String, String> options = new HashMap<String, String>();
+        options.put("driver", DRIVER);
+        options.put("url", URL + "?user=" + USERNAME + "&password=" + PASSWORD);
+        options.put("dbtable", "user");
+
+        DataFrame jdbcDF = sqlContext.read().format("jdbc").options(options).load();
+        jdbcDF.show();
 
         String brokers = args[0];
         String topics = args[1];
@@ -92,6 +111,8 @@ public final class OMS {
             }
         });
         lines.print();
+
+        //JavaRDD mysql = new JdbcRDD<String>();
 
         jssc.start();
         jssc.awaitTermination();
