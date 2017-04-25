@@ -45,16 +45,19 @@ public final class OMS {
 
 
         JavaSparkContext sc =
-                new JavaSparkContext(new SparkConf().setAppName("Spark Example").setMaster("local[*]"));
+                new JavaSparkContext(new SparkConf().setAppName("Spark Example"));
         SQLContext sqlContext = new SQLContext(sc);
         Class.forName("com.mysql.jdbc.Driver");
-        String url =
-                "jdbc:mysql://10.21.62.49:3306/ocp_maint?user=root;password=SPLXP026";
+
+        Map<String, String> options = new HashMap<String, String>();
+        options.put("driver", DRIVER);
+        options.put("url", URL + "?user=" + USERNAME + "&password=" + PASSWORD);
+        options.put("dbtable", "Alert");
+
         DataFrame df = sqlContext
                 .read()
                 .format("jdbc")
-                .option("url", url)
-                .option("dbtable", "Alert")
+                .options(options)
                 .load();
 
 // Looks the schema of this DataFrame.
