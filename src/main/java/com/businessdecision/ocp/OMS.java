@@ -5,11 +5,11 @@ import java.util.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.rdd.JdbcRDD;
+import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.DataFrame;
-import org.apache.spark.storage.StorageLevel;
 import org.json.*;
 import org.apache.spark.sql.SQLContext;
 
@@ -21,7 +21,6 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.streaming.kafka.KafkaUtils;
 import kafka.serializer.StringDecoder;
-import com.mysql.jdbc.*;
 
 /**
  * Created by Moncef.Bettaieb on 19/04/2017.
@@ -45,12 +44,12 @@ public final class OMS {
         }
 
 
-        JavaSparkContext sc =
+        final JavaSparkContext sc =
                 new JavaSparkContext(new SparkConf().setAppName("OMS Maintenance Spark Streaming"));
-        SQLContext sqlContext = new SQLContext(sc);
+        final SQLContext sqlContext = new SQLContext(sc);
         Class.forName("com.mysql.jdbc.Driver");
 
-        Map<String, String> options = new HashMap<String, String>();
+        final Map<String, String> options = new HashMap<String, String>();
         options.put("driver", DRIVER);
         options.put("url", URL + "?user=" + USERNAME + "&password=" + PASSWORD);
         options.put("dbtable", "Alert");
@@ -60,7 +59,8 @@ public final class OMS {
                 .format("jdbc")
                 .options(options)
                 .load()
-                .persist(StorageLevel.MEMORY_AND_DISK_SER());
+                .cache();
+                //.persist(StorageLevel.MEMORY_AND_DISK_SER());
 
         // Looks the schema of this DataFrame.
         //df.printSchema();
@@ -88,7 +88,7 @@ public final class OMS {
 
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
-                df.show();
+                //df.show();
                 try {
                     JSONObject obj = new JSONObject(tuple2._2());
                     String status = obj.getString("status");
@@ -104,6 +104,7 @@ public final class OMS {
                     String factor = obj.getString("factor");
                     String result = status+","+date+","+gpk+","+rms+","+pom+","+extTemp+","+taskId+","+factor;
                     Properties props = new Properties();
+
                     props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.21.62.48:9092");
                     props.put(ProducerConfig.RETRIES_CONFIG, "3");
                     props.put(ProducerConfig.ACKS_CONFIG, "all");
@@ -115,6 +116,29 @@ public final class OMS {
                     KafkaProducer producer = new KafkaProducer<String,String>(props);
                     producer.send(new ProducerRecord<String, String>("events",
                             result));
+                    List<String> rawData = Arrays.asList(result);
+                    JavaRDD<String> rdd1 = sc.parallelize(rawData);
+                    JavaRDD rdd2 = df.javaRDD();
+
+                    JavaPairRDD<String, String> firstRDD = rdd1.mapToPair(new PairFunction<String, String, String>() {
+                        public Tuple2<String, String> call(String s) {
+                            String[] customerSplit = s.split(",");
+                            return new Tuple2<String, String>(customerSplit[0], customerSplit[1]);
+                        }
+                    });
+                    //JavaPairRDD<String,String> firstRDD = sc.parallelizePairs(List<"test",result>);
+                    JavaPairRDD<String,String> secondRDD = rdd2.mapToPair(new PairFunction<String, String, String>() {
+                        public Tuple2<String, String> call(String s) {
+                            String[] customerSplit = s.split(",");
+                            return new Tuple2<String, String>(customerSplit[0], customerSplit[1]);
+                        }
+                    });
+
+                    JavaPairRDD<String, Tuple2<String, String>> joinsOutput = firstRDD.join(secondRDD);
+
+
+                    //sqlContext.sparkContext().parallelize(Seq(result)).toDF(result);
+
                     return result;
                 }
                 catch (JSONException e){
@@ -123,6 +147,10 @@ public final class OMS {
             }
         });
         lines.print();
+
+        //JavaPairDStream<String, String> windowedStream1 = lines.window(Durations.seconds(20));
+
+        //JavaPairDStream<String, Tuple2<String, String>> joinedStream = windowedStream1.join(df.toJavaRDD());
 
         //JavaRDD mysql = new JdbcRDD<String>();
 
