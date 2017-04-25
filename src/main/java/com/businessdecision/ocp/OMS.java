@@ -47,13 +47,17 @@ public final class OMS {
                 new JavaSparkContext(new SparkConf().setAppName("Spark Example").setMaster("local[*]"));
         SQLContext sqlContext = new SQLContext(sc);
 
-        Map<String, String> options = new HashMap<String, String>();
-        options.put("driver", DRIVER);
-        options.put("url", URL + "?user=" + USERNAME + "&password=" + PASSWORD);
-        options.put("dbtable", "user");
+        String url =
+                "jdbc:mysql://10.21.62.49:3306/ocp_maint?user=root;password=SPLXP026";
+        DataFrame df = sqlContext
+                .read()
+                .format("jdbc")
+                .option("url", url)
+                .option("dbtable", "Alert")
+                .load();
 
-        DataFrame jdbcDF = sqlContext.read().format("jdbc").options(options).load();
-        jdbcDF.show();
+// Looks the schema of this DataFrame.
+        df.printSchema();
 
         String brokers = args[0];
         String topics = args[1];
