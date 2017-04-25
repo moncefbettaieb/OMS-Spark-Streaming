@@ -9,6 +9,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.JdbcRDD;
 import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Row;
 import org.json.*;
 import org.apache.spark.sql.SQLContext;
 
@@ -63,6 +64,10 @@ public final class OMS {
 // Looks the schema of this DataFrame.
         df.printSchema();
 
+        Row[] result = df.collect();
+        for (Row row : result) {
+            System.out.println(row);
+        }
         String brokers = args[0];
         String topics = args[1];
 
