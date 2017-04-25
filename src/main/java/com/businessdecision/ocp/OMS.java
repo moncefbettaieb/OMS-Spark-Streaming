@@ -34,7 +34,7 @@ public final class OMS {
     private OMS() {
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         if (args.length < 2) {
             System.err.println("Usage: OMS Maintenance Spark Streaming <brokers> <topics>\n" +
                     "  <brokers> is a list of one or more Kafka brokers\n" +
@@ -46,7 +46,7 @@ public final class OMS {
         JavaSparkContext sc =
                 new JavaSparkContext(new SparkConf().setAppName("Spark Example").setMaster("local[*]"));
         SQLContext sqlContext = new SQLContext(sc);
-
+        Class.forName("com.mysql.jdbc.Driver");
         String url =
                 "jdbc:mysql://10.21.62.49:3306/ocp_maint?user=root;password=SPLXP026";
         DataFrame df = sqlContext
