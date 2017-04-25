@@ -45,7 +45,7 @@ public final class OMS {
 
 
         JavaSparkContext sc =
-                new JavaSparkContext(new SparkConf().setAppName("Spark Example"));
+                new JavaSparkContext(new SparkConf().setAppName("OMS Maintenance Spark Streaming"));
         SQLContext sqlContext = new SQLContext(sc);
         Class.forName("com.mysql.jdbc.Driver");
 
@@ -63,7 +63,6 @@ public final class OMS {
 // Looks the schema of this DataFrame.
         df.printSchema();
         df.cache();
-        df.show();
 
         String brokers = args[0];
         String topics = args[1];
