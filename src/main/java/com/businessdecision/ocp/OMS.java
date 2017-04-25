@@ -9,6 +9,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.rdd.JdbcRDD;
 import org.apache.spark.sql.DataFrame;
+import org.apache.spark.storage.StorageLevel;
 import org.json.*;
 import org.apache.spark.sql.SQLContext;
 
@@ -59,7 +60,7 @@ public final class OMS {
                 .format("jdbc")
                 .options(options)
                 .load()
-                .cache();
+                .persist(StorageLevel.MEMORY_AND_DISK_SER());
 
         // Looks the schema of this DataFrame.
         //df.printSchema();
