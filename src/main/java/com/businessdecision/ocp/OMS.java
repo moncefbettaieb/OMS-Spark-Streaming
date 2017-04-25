@@ -54,7 +54,7 @@ public final class OMS {
         options.put("url", URL + "?user=" + USERNAME + "&password=" + PASSWORD);
         options.put("dbtable", "Alert");
 
-        DataFrame df = sqlContext
+        final DataFrame df = sqlContext
                 .read()
                 .format("jdbc")
                 .options(options)
@@ -86,6 +86,7 @@ public final class OMS {
 
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
+                df.show();
                 try {
                     JSONObject obj = new JSONObject(tuple2._2());
                     String status = obj.getString("status");
