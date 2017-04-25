@@ -58,10 +58,11 @@ public final class OMS {
                 .read()
                 .format("jdbc")
                 .options(options)
-                .load().cache();
+                .load()
+                .cache();
 
-// Looks the schema of this DataFrame.
-        df.printSchema();
+        // Looks the schema of this DataFrame.
+        //df.printSchema();
         //df.cache();
 
         String brokers = args[0];
