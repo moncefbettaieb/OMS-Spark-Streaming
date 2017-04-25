@@ -20,6 +20,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.streaming.kafka.KafkaUtils;
 import kafka.serializer.StringDecoder;
+import com.mysql.jdbc.*;
 
 /**
  * Created by Moncef.Bettaieb on 19/04/2017.
