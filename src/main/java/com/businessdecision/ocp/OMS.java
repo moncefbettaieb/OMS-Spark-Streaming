@@ -46,20 +46,24 @@ public final class OMS {
 
         JavaSparkContext sc =
                 new JavaSparkContext(new SparkConf().setAppName("Spark Example"));
-        final SQLContext sqlContext = new SQLContext(sc);
+        SQLContext sqlContext = new SQLContext(sc);
         Class.forName("com.mysql.jdbc.Driver");
 
-        final Map<String, String> options = new HashMap<String, String>();
+        Map<String, String> options = new HashMap<String, String>();
         options.put("driver", DRIVER);
         options.put("url", URL + "?user=" + USERNAME + "&password=" + PASSWORD);
         options.put("dbtable", "Alert");
 
-
+        final DataFrame df = sqlContext
+                .read()
+                .format("jdbc")
+                .options(options)
+                .load();
 
 // Looks the schema of this DataFrame.
-
-        //df.persist();
-        //df.show();
+        df.printSchema();
+        df.cache();
+        df.show();
 
         String brokers = args[0];
         String topics = args[1];
@@ -83,12 +87,6 @@ public final class OMS {
 
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
-                DataFrame df = sqlContext
-                        .read()
-                        .format("jdbc")
-                        .options(options)
-                        .load();
-                df.printSchema();
                 df.show();
                 try {
                     JSONObject obj = new JSONObject(tuple2._2());
