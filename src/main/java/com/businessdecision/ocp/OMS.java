@@ -139,6 +139,7 @@ public final class OMS {
                                 Float gpk = Float.valueOf(values[2]);
                                 Float rms = Float.valueOf(values[3]);
                                 Float temperature = Float.valueOf(values[5]);
+                                System.out.format("%s\n", pom);
                                 st.setString(1, pom);
                                 ResultSet rs = st.executeQuery();
                                 while (rs.next()) {
