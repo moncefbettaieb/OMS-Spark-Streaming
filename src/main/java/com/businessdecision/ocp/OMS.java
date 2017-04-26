@@ -1,6 +1,5 @@
 package com.businessdecision.ocp;
 
-import java.sql.SQLException;
 import java.util.*;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -67,10 +66,8 @@ public final class OMS {
                 .cache();
 //                .persist(StorageLevel.MEMORY_AND_DISK_SER());
 
-        // Looks the schema of this DataFrame.
         df.printSchema();
         df.show();
-        //df.cache();
 
         final JavaPairRDD rdd2 = df.toJavaRDD().mapToPair(new PairFunction<Row, String, String>() {
             public Tuple2<String, String> call(Row row) throws Exception {
@@ -78,13 +75,10 @@ public final class OMS {
             }
         });
 
-
         String brokers = args[0];
         String topics = args[1];
 
-        //SparkConf sparkConf = new SparkConf().setAppName("OMS Maintenance Spark Streaming");
         JavaStreamingContext jssc = new JavaStreamingContext(sc, Durations.seconds(5));
-
         HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(",")));
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
         kafkaParams.put("metadata.broker.list", brokers);
@@ -200,11 +194,11 @@ public final class OMS {
                 });
 
                 JavaPairRDD rr = rddpair1.join(rddpair2);
-                rr.foreach(new VoidFunction<Tuple2<String, String>>() {
-                    public void call(Tuple2<String, String> t) throws Exception {
-                        System.out.println(t._1() + " " + t._2());
-                    }
-                });
+//                rr.foreach(new VoidFunction<Tuple2<String, String>>() {
+//                    public void call(Tuple2<String, String> t) throws Exception {
+//                        System.out.println(t._1() + " " + t._2());
+//                    }
+//                });
                 return null;
             }
         });
