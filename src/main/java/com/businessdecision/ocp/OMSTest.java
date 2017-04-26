@@ -181,7 +181,7 @@ public final class OMSTest {
                             String[] values = value.split(",");
                             if(values.length>4){
                             st.setString(1, values[4]);
-                            ResultSet rs = st.executeQuery(query );
+                            ResultSet rs = st.executeQuery();
                             while (rs.next()) {
                                 int idArlert = rs.getInt("idAlert");
                                 String idPom = rs.getString("idPom");
