@@ -18,7 +18,6 @@ import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.Time;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairInputDStream;
-import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 
 import com.google.common.collect.Lists;
@@ -29,7 +28,7 @@ import org.json.JSONObject;
 import scala.Tuple2;
 
 public final class OMSTest {
-    private static final Pattern SPACE = Pattern.compile(" ");
+    private static final Pattern dot = Pattern.compile(",");
 
     public static void main(String[] args) throws ClassNotFoundException {
         if (args.length < 2) {
@@ -38,16 +37,23 @@ public final class OMSTest {
                     "  <topics> is a list of one or more kafka topics to consume from\n\n");
             System.exit(1);
         }
-
+        Class.forName("com.mysql.jdbc.Driver");
         SparkConf sparkConf = new SparkConf().setMaster("local[2]").setAppName(
                 "OMS Maintenance Spark Streaming");
         JavaStreamingContext ssc = new JavaStreamingContext(sparkConf,
                 Durations.seconds(1));
 
-        Class.forName("com.mysql.jdbc.Driver");
-
         String brokers = args[0];
         String topics = args[1];
+        final Properties props = new Properties();
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.21.62.48:9092");
+        props.put(ProducerConfig.RETRIES_CONFIG, "3");
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
+        props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "none");
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 200);
+        props.put(ProducerConfig.BLOCK_ON_BUFFER_FULL_CONFIG, true);
+        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 
         HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(",")));
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
@@ -63,18 +69,10 @@ public final class OMSTest {
                 topicsSet
         );
 
-
-//        JavaReceiverInputDStream<String> lines = ssc.socketTextStream(args[0],
-//                Integer.parseInt(args[1]));
-
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
-                //df.show();
-
-
-
                 try {
-
+// TODO add decompression
 //                    InputStream stream = new ByteArrayInputStream(
 //                            tuple2._2().getBytes("UTF-8")
 //                    );
@@ -100,133 +98,102 @@ public final class OMSTest {
                     String extTemp = obj.getJSONObject("values").getString("exttemp");
                     String taskId = obj.getJSONObject("taskid").getString("$oid");
                     String factor = obj.getString("factor");
-                    String result = status+","+date+","+gpk+","+rms+","+pom+","+extTemp+","+taskId+","+factor;
-                    Properties props = new Properties();
+                    String result = status + "," + date + "," + gpk + "," + rms + "," + pom + "," + extTemp + "," + taskId + "," + factor;
 
-                    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.21.62.48:9092");
-                    props.put(ProducerConfig.RETRIES_CONFIG, "3");
-                    props.put(ProducerConfig.ACKS_CONFIG, "all");
-                    props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "none");
-                    props.put(ProducerConfig.BATCH_SIZE_CONFIG, 200);
-                    props.put(ProducerConfig.BLOCK_ON_BUFFER_FULL_CONFIG, true);
-                    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-                    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-                    KafkaProducer producer = new KafkaProducer<String,String>(props);
+                    KafkaProducer producer = new KafkaProducer<String, String>(props);
                     producer.send(new ProducerRecord<String, String>("events",
                             result));
-
-//                    DataFrame df = sqlContext
-//                            .read()
-//                            .format("jdbc")
-//                            .options(options)
-//                            .load()
-//                            .cache();
-//
-////                    List<String> metrics = Arrays.asList(result.split(","));
-//                  //  JavaRDD<String> rdd1 = sc.parallelize(metrics);
-//                  //  JavaPairRDD<String,String> rdd0 = JavaPairRDD.fromJavaRDD(rdd1  );
-//
-//                    JavaPairRDD<String, String> rdd2 = df.toJavaRDD().mapToPair(new PairFunction<Row, String, String>() {
-//                        public Tuple2<String, String> call(Row row) throws Exception {
-//                            return new Tuple2<String, String>(row.getString(0), row.getString(1));
-//                        }
-//                    });
-
-                    //sqlContext.sparkContext().parallelize(Seq(result)).toDF(result);
-
                     return result;
-                }
-                catch (JSONException e) {
+                } catch (JSONException e) {
                     return "Json Exception : " + e;
                 }
-//                } catch (UnsupportedEncodingException e) {
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
             }
         });
 
         JavaDStream<String> words = lines
                 .flatMap(new FlatMapFunction<String, String>() {
                     public Iterable<String> call(String x) {
-                        return Lists.newArrayList(SPACE.split(x));
+                        return Lists.newArrayList(dot.split(x));
                     }
                 });
-        // Convert RDDs of the words DStream to DataFrame and run SQL query
+
         words.foreachRDD(new Function2<JavaRDD<String>, Time, Void>() {
             public Void call(JavaRDD<String> rdd, Time time)
                     throws SQLException {
-
                 Connection mcConnect = null;
-                PreparedStatement  st = null;
-                //PreparedStatement mStatement = null;
+                PreparedStatement st = null;
                 try {
                     mcConnect = DriverManager.getConnection(
                             "jdbc:mysql://10.21.62.49/ocp_maint", "root", "SPLXP026");
                     String query = "SELECT * FROM Alert WHERE idPom = ?";
-
-
-                    List<String> list =rdd.collect();
-
-
-                    if (list.size()>0) {
-
-
-                        for(String value : list){
+                    List<String> list = rdd.collect();
+                    if (list.size() > 0) {
+                        for (String value : list) {
                             System.out.format("%s\n", value);
                             st = mcConnect.prepareStatement(query);
                             String[] values = value.split(",");
-
-
-                            if(values.length>4){
-                                String pom  = values[4];
+                            if (values.length > 4) {
+                                String Alert = "";
+                                String pom = values[4];
                                 Float gpk = Float.valueOf(values[2]);
                                 Float rms = Float.valueOf(values[3]);
                                 Float temperature = Float.valueOf(values[5]);
-                            st.setString(1, pom);
-                            ResultSet rs = st.executeQuery();
-                            while (rs.next()) {
-                                int idArlert = rs.getInt("idAlert");
-                                String idPom = rs.getString("idPom");
-                                Date dateAlert = rs.getDate("dateAlert");
-                                Float gpkAlertMax = rs.getFloat("GpkAlertMax");
-                                Float gpkAlertMin = rs.getFloat("GpkAlertMin");
-                                Float gpkEmergMax = rs.getFloat("GpkEmergMax");
-                                Float gpkEmergMin = rs.getFloat("GpkEmergMin");
-                                Float tempAlertMax = rs.getFloat("TempAlertMax");
-                                Float tempAlertMin = rs.getFloat("TempAlertMin");
-                                Float tempEmergMax = rs.getFloat("TempEmergMax");
-                                Float tempEmergMin = rs.getFloat("TempEmergMin");
-                                Float rmsAlertMax = rs.getFloat("RmsAlertMax");
-                                Float rmsAlertMin = rs.getFloat("RmsAlertMin");
-                                Float rmsEmergMax = rs.getFloat("RmsEmergMax");
-                                Float rmsEmergMin = rs.getFloat("RmsEmergMin");
-                                // print the results
-                                System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
-                                        gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
-                                        tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
-                                        rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
-                                if(temperature >= tempAlertMax) System.out.format("tempAlertMax \n");
-                                if(temperature <= tempAlertMin) System.out.format("tempAlertMin \n");
-                                if(temperature >= tempEmergMax) System.out.format("tempEmergMax \n");
-                                if(temperature <= tempEmergMin) System.out.format("tempEmergMin \n");
+                                st.setString(1, pom);
+                                ResultSet rs = st.executeQuery();
+                                while (rs.next()) {
+                                    int idArlert = rs.getInt("idAlert");
+                                    String idPom = rs.getString("idPom");
+                                    Date dateAlert = rs.getDate("dateAlert");
+                                    Float gpkAlertMax = rs.getFloat("GpkAlertMax");
+                                    Float gpkAlertMin = rs.getFloat("GpkAlertMin");
+                                    Float gpkEmergMax = rs.getFloat("GpkEmergMax");
+                                    Float gpkEmergMin = rs.getFloat("GpkEmergMin");
+                                    Float tempAlertMax = rs.getFloat("TempAlertMax");
+                                    Float tempAlertMin = rs.getFloat("TempAlertMin");
+                                    Float tempEmergMax = rs.getFloat("TempEmergMax");
+                                    Float tempEmergMin = rs.getFloat("TempEmergMin");
+                                    Float rmsAlertMax = rs.getFloat("RmsAlertMax");
+                                    Float rmsAlertMin = rs.getFloat("RmsAlertMin");
+                                    Float rmsEmergMax = rs.getFloat("RmsEmergMax");
+                                    Float rmsEmergMin = rs.getFloat("RmsEmergMin");
+                                    System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
+                                            gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
+                                            tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
+                                            rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
 
-                                if(gpk >= gpkAlertMax) System.out.format("gpkAlertMax \n");
-                                if(gpk <= gpkAlertMin) System.out.format("gpkAlertMin \n");
-                                if(gpk >= gpkEmergMax) System.out.format("gpkEmergMax \n");
-                                if(gpk <= gpkEmergMin) System.out.format("gpkEmergMin \n");
-
-                                if(rms >= rmsAlertMax) System.out.format("rmsAlertMax \n");
-                                if(rms <= rmsAlertMin) System.out.format("rmsAlertMin \n");
-                                if(rms >= rmsEmergMax) System.out.format("rmsEmergMax \n");
-                                if(rms <= rmsEmergMin) System.out.format("rmsEmergMin \n");
-                            }
+                                    Alert += idPom + "," + String.valueOf(dateAlert);
+                                    if (temperature >= tempAlertMax) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (temperature <= tempAlertMin) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (temperature >= tempEmergMax) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (temperature <= tempEmergMin) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (gpk >= gpkAlertMax) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (gpk <= gpkAlertMin) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (gpk >= gpkEmergMax) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (gpk <= gpkEmergMin) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (rms >= rmsAlertMax) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (rms <= rmsAlertMin) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (rms >= rmsEmergMax) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    if (rms <= rmsEmergMin) Alert += "," + String.valueOf("1");
+                                    else Alert += "," + String.valueOf("0");
+                                    KafkaProducer producer = new KafkaProducer<String, String>(props);
+                                    producer.send(new ProducerRecord<String, String>("alerts",
+                                            Alert));
+                                }
                             }
                         }
                     }
-                }
-                finally {
+                } finally {
                     if (mcConnect != null) {
                         mcConnect.close();
                     }
@@ -234,11 +201,9 @@ public final class OMSTest {
                         st.close();
                     }
                 }
-
                 return null;
             }
         });
-
         ssc.start();
         ssc.awaitTermination();
     }
