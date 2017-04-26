@@ -193,7 +193,7 @@ public final class OMS {
                         return new Tuple2<String, String>("", readName);
                     }
                 });
-                JavaPairRDD<String, Integer> rddpair2 = rdd2.mapToPair(new PairFunction<String, String, String>() {
+                JavaPairRDD<String, String> rddpair2 = rdd2.mapToPair(new PairFunction<String, String, String>() {
                     public Tuple2<String, String> call(final String readName) {
                         return new Tuple2<String, String>("", readName);
                     }
