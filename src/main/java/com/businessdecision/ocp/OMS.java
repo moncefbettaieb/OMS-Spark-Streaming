@@ -1,5 +1,6 @@
 package com.businessdecision.ocp;
 
+import java.sql.SQLException;
 import java.util.*;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -8,10 +9,14 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
 import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.Row;
 import org.json.*;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.streaming.Time;
+
 
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.*;
@@ -43,7 +48,6 @@ public final class OMS {
             System.exit(1);
         }
 
-
         final JavaSparkContext sc =
                 new JavaSparkContext(new SparkConf().setAppName("OMS Maintenance Spark Streaming"));
         final SQLContext sqlContext = new SQLContext(sc);
@@ -60,11 +64,18 @@ public final class OMS {
                 .options(options)
                 .load()
                 .cache();
-                //.persist(StorageLevel.MEMORY_AND_DISK_SER());
+//                .persist(StorageLevel.MEMORY_AND_DISK_SER());
 
         // Looks the schema of this DataFrame.
         //df.printSchema();
         //df.cache();
+
+        final JavaPairRDD rdd2 = df.toJavaRDD().mapToPair(new PairFunction<Row, String, String>() {
+            public Tuple2<String, String> call(Row row) throws Exception {
+                return new Tuple2<String, String>(row.getString(0), row.getString(1));
+            }
+        });
+
 
         String brokers = args[0];
         String topics = args[1];
@@ -116,26 +127,23 @@ public final class OMS {
                     KafkaProducer producer = new KafkaProducer<String,String>(props);
                     producer.send(new ProducerRecord<String, String>("events",
                             result));
-                    List<String> rawData = Arrays.asList(result);
-                    JavaRDD<String> rdd1 = sc.parallelize(rawData);
-                    JavaRDD rdd2 = df.javaRDD();
 
-                    JavaPairRDD<String, String> firstRDD = rdd1.mapToPair(new PairFunction<String, String, String>() {
-                        public Tuple2<String, String> call(String s) {
-                            String[] customerSplit = s.split(",");
-                            return new Tuple2<String, String>(customerSplit[0], customerSplit[1]);
+                    DataFrame df = sqlContext
+                            .read()
+                            .format("jdbc")
+                            .options(options)
+                            .load()
+                            .cache();
+
+                    List<String> metrics = Arrays.asList(result.split(","));
+                    JavaRDD<String> rdd1 = sc.parallelize(metrics);
+                  //  JavaPairRDD<String,String> rdd0 = JavaPairRDD.fromJavaRDD(rdd1  );
+
+                    JavaPairRDD<String, String> rdd2 = df.toJavaRDD().mapToPair(new PairFunction<Row, String, String>() {
+                        public Tuple2<String, String> call(Row row) throws Exception {
+                            return new Tuple2<String, String>(row.getString(0), row.getString(1));
                         }
                     });
-                    //JavaPairRDD<String,String> firstRDD = sc.parallelizePairs(List<"test",result>);
-                    JavaPairRDD<String,String> secondRDD = rdd2.mapToPair(new PairFunction<String, String, String>() {
-                        public Tuple2<String, String> call(String s) {
-                            String[] customerSplit = s.split(",");
-                            return new Tuple2<String, String>(customerSplit[0], customerSplit[1]);
-                        }
-                    });
-
-                    JavaPairRDD<String, Tuple2<String, String>> joinsOutput = firstRDD.join(secondRDD);
-
 
                     //sqlContext.sparkContext().parallelize(Seq(result)).toDF(result);
 
@@ -148,9 +156,87 @@ public final class OMS {
         });
         lines.print();
 
-        //JavaPairDStream<String, String> windowedStream1 = lines.window(Durations.seconds(20));
+        //final JavaRDD<String> rdd2 = df.;
 
-        //JavaPairDStream<String, Tuple2<String, String>> joinedStream = windowedStream1.join(df.toJavaRDD());
+//        lines.foreachRDD((Function<JavaPairRDD<String, String>, Void>) rdd -> {
+//            rdd.foreachPartition(tuple2Iterator -> {
+//                // get message
+//                Tuple2<String, String> item = tuple2Iterator.next();
+//
+//                // lookup
+//                String sqlQuery = "SELECT something FROM somewhere";
+//                Seq<String> resultSequence = hiveContext.runSqlHive(sqlQuery);
+//                List<String> result = scala.collection.JavaConversions.seqAsJavaList(resultSequence);
+//
+//            });
+//            return null;
+//        });
+//
+//        lines.foreach(new Function<JavaPairRDD<String, String>, Void>() {
+//
+//            public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
+//                return null;
+//            }
+//
+//        });
+
+
+        //rdd =>rdd.join(geoData))
+        //lines.tran
+
+        lines.foreachRDD(new Function2<JavaRDD<String>, Time, Void>() {
+            public Void call(JavaRDD<String> rdd, Time time)
+                    throws SQLException {
+
+                JavaPairRDD<String, Integer> counts = rdd.mapToPair(new PairFunction<String, String, Integer>() {
+                    public Tuple2<String, Integer> call(final String readName) {
+                        return new Tuple2<String, Integer>(readName, Integer.valueOf(1));
+                    }
+                });
+                JavaPairRDD<String, Integer> ss = rdd2.mapToPair(new PairFunction<String, String, Integer>() {
+                    public Tuple2<String, Integer> call(final String readName) {
+                        return new Tuple2<String, Integer>(readName, Integer.valueOf(1));
+                    }
+                });
+
+                JavaPairRDD<String, Tuple2<Integer, Integer>> rr = counts.join(ss);
+                return null;
+            }
+        });
+//
+//        lines.foreach(new Function<JavaPairRDD<String, String>, Void>() {
+//            public Void call(JavaPairRDD<String, String> rdd) {
+//                JavaPairRDD<String, Tuple2> joinRdd = rdd.join(rdd2);
+//                return (null);
+//            }
+//        });
+
+//        JavaPairRDD<String, String> firstRDD = rdd1.mapToPair(new PairFunction<String, String, String>() {
+//            public Tuple2<String, String> call(String s) {
+//                String[] customerSplit = s.split(",");
+//                return new Tuple2<String, String>(customerSplit[0], customerSplit[1]);
+//            }
+//        });
+        //JavaPairRDD<String,String> firstRDD = sc.parallelizePairs(List<"test",result>);
+//        JavaPairRDD<String,String> secondRDD = rdd2.mapToPair(new PairFunction<String, String, String>() {
+//            public Tuple2<String, String> call(String s) {
+//                String[] customerSplit = s.split(",");
+//                return new Tuple2<String, String>(customerSplit[0], customerSplit[1]);
+//            }
+//        });
+
+//        JavaPairRDD<String, Tuple2<String, String>> joinsOutput = firstRDD.join(secondRDD);
+
+//        JavaDStream<String> test = lines.reduceByWindow(new Function2<String, String, String>() {
+//            public String call(String s, String s2) throws Exception {
+//                return null;
+//            }
+//        },Durations.seconds(5),Durations.seconds(5));
+//
+//
+//        JavaPairDStream<String, String> windowedStream1 = null;
+//
+//        JavaPairDStream<String, Tuple2<String, String>> joinedStream = windowedStream1.join(windowedStream1);
 
         //JavaRDD mysql = new JdbcRDD<String>();
 
