@@ -55,8 +55,6 @@ public final class OMS {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 
-        final KafkaProducer producer = new KafkaProducer<String, String>(props);
-
         HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(",")));
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
         kafkaParams.put("metadata.broker.list", brokers);
@@ -102,7 +100,7 @@ public final class OMS {
                     String factor = obj.getString("factor");
                     String result = status + "," + date + "," + gpk + "," + rms + "," + pom + "," + extTemp + "," + taskId + "," + factor;
 
-//                    KafkaProducer producer = new KafkaProducer<String, String>(props);
+                    KafkaProducer producer = new KafkaProducer<String, String>(props);
                     producer.send(new ProducerRecord<String, String>("events",
                             result));
                     return result;
@@ -189,8 +187,8 @@ public final class OMS {
                                     if (rms <= rmsEmergMin) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
                                     System.out.format("%s\n" , Alert);
-
-                                    producer.send(new ProducerRecord<String, String>("alerts",
+                                    final KafkaProducer alertsProducer = new KafkaProducer<String, String>(props);
+                                    alertsProducer.send(new ProducerRecord<String, String>("alerts",
                                             Alert));
                                 }
                             }
