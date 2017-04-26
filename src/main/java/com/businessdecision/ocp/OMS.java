@@ -71,7 +71,7 @@ public final class OMS {
 
         final JavaPairRDD rdd2 = df.toJavaRDD().mapToPair(new PairFunction<Row, String, String>() {
             public Tuple2<String, String> call(Row row) throws Exception {
-                return new Tuple2<String, String>( row.getString(1), row.getString(0));
+                return new Tuple2<String, String>( row.getString(1), row.getString(1));
             }
         });
 
