@@ -129,11 +129,12 @@ public final class OMS {
                     List<String> list = rdd.collect();
                     if (list.size() > 0) {
                         for (String value : list) {
-                            System.out.format("%s\n", value);
+//                            System.out.format("%s\n", value);
                             st = mcConnect.prepareStatement(query);
                             String[] values = value.split(",");
                             if (values.length > 4) {
                                 String Alert = "";
+                                System.out.format("%s\n", Alert);
                                 String pom = values[4];
                                 Float gpk = Float.valueOf(values[2]);
                                 Float rms = Float.valueOf(values[3]);
@@ -156,10 +157,10 @@ public final class OMS {
                                     Float rmsAlertMin = rs.getFloat("RmsAlertMin");
                                     Float rmsEmergMax = rs.getFloat("RmsEmergMax");
                                     Float rmsEmergMin = rs.getFloat("RmsEmergMin");
-//                                    System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
-//                                            gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
-//                                            tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
-//                                            rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
+                                    System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
+                                            gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
+                                            tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
+                                            rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
 
                                     Alert += idPom + "," + String.valueOf(dateAlert);
                                     if (temperature >= tempAlertMax) Alert += "," + String.valueOf("1");
