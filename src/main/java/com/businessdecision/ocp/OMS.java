@@ -136,7 +136,7 @@ public final class OMS {
                             .cache();
 
                     List<String> metrics = Arrays.asList(result.split(","));
-                    JavaRDD<String> rdd1 = sc.parallelize(metrics);
+                  //  JavaRDD<String> rdd1 = sc.parallelize(metrics);
                   //  JavaPairRDD<String,String> rdd0 = JavaPairRDD.fromJavaRDD(rdd1  );
 
                     JavaPairRDD<String, String> rdd2 = df.toJavaRDD().mapToPair(new PairFunction<Row, String, String>() {
