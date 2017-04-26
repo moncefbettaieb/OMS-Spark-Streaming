@@ -164,7 +164,7 @@ public final class OMSTest {
                 PreparedStatement mStatement = null;
                 try {
                     mcConnect = DriverManager.getConnection(
-                            "jdbc:mysql://10.21.62.48/ocp_maint", "root", "SPLXP026");
+                            "jdbc:mysql://10.21.62.49/ocp_maint", "root", "SPLXP026");
                     mStatement = mcConnect.prepareStatement("insert into Alert(name,value) values (?,?)");
                     List<String> list =rdd.collect();
                     if (list.size()>0) {
