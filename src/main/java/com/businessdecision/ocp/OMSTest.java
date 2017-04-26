@@ -1,9 +1,7 @@
 package com.businessdecision.ocp;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -165,13 +163,41 @@ public final class OMSTest {
                 try {
                     mcConnect = DriverManager.getConnection(
                             "jdbc:mysql://10.21.62.49/ocp_maint", "root", "SPLXP026");
-                    mStatement = mcConnect.prepareStatement("insert into Alert(name,value) values (?,?)");
+                    Statement st = mcConnect.createStatement();
+                    //mStatement = st.prepareStatement("select * from Alert");
+                    String query = "select * from Alert";
+                    ResultSet rs = mStatement.executeQuery(query);
                     List<String> list =rdd.collect();
+
+                    while (rs.next())
+                    {
+                        int idArlert = rs.getInt("idAlert");
+                        String idPom = rs.getString("idPom");
+                        Date dateAlert = rs.getDate("dateAlert");
+                        Float GpkAlertMax = rs.getFloat("GpkAlertMax");
+                        Float GpkAlertMin = rs.getFloat("GpkAlertMin");
+                        Float GpkEmergMax = rs.getFloat("GpkEmergMax");
+                        Float GpkEmergMin = rs.getFloat("GpkEmergMin");
+                        Float TempAlertMax = rs.getFloat("TempAlertMax");
+                        Float TempAlertMin = rs.getFloat("TempAlertMin");
+                        Float TempEmergMax = rs.getFloat("TempEmergMax");
+                        Float TempEmergMin = rs.getFloat("TempEmergMin");
+                        Float RmsAlertMax = rs.getFloat("RmsAlertMax");
+                        Float RmsAlertMin = rs.getFloat("RmsAlertMin");
+                        Float RmsEmergMax = rs.getFloat("RmsEmergMax");
+                        Float RmsEmergMin = rs.getFloat("RmsEmergMin");
+
+
+
+                        // print the results
+                        System.out.format("%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert, GpkAlertMax, GpkAlertMin, GpkEmergMax);
+                    }
+
                     if (list.size()>0) {
                         for(String value : list){
-                            mStatement.setString(1, value);
-                            mStatement.setString(2, "1");
-                            mStatement.executeUpdate();
+                            //mStatement.setString(1, value);
+                            //mStatement.setString(2, "1");
+                            //mStatement.executeUpdate();
                         }
                     }
                 }
