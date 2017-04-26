@@ -164,7 +164,7 @@ public final class OMSTest {
                 try {
                     mcConnect = DriverManager.getConnection(
                             "jdbc:mysql://10.21.62.49/ocp_maint", "root", "SPLXP026");
-                    String query = "SELECT USER_ID, USERNAME FROM DBUSER WHERE USER_ID = ?";
+                    String query = "SELECT * FROM Alert WHERE idPom = ?";
 
                     //mStatement = st.prepareStatement("select * from Alert");
 
@@ -179,10 +179,10 @@ public final class OMSTest {
                             System.out.format("%s\n", value);
                             st = mcConnect.prepareStatement(query);
                             String[] values = value.split(",");
+                            if(values.length>4){
                             st.setString(1, values[4]);
                             ResultSet rs = st.executeQuery(query );
-                            while (rs.next())
-                            {
+                            while (rs.next()) {
                                 int idArlert = rs.getInt("idAlert");
                                 String idPom = rs.getString("idPom");
                                 Date dateAlert = rs.getDate("dateAlert");
@@ -198,12 +198,12 @@ public final class OMSTest {
                                 Float RmsAlertMin = rs.getFloat("RmsAlertMin");
                                 Float RmsEmergMax = rs.getFloat("RmsEmergMax");
                                 Float RmsEmergMin = rs.getFloat("RmsEmergMin");
-                                
+
 
                                 // print the results
                                 System.out.format("%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert, GpkAlertMax, GpkAlertMin, GpkEmergMax);
                             }
-
+                            }
                         }
                     }
                 }
