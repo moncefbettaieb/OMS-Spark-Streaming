@@ -55,6 +55,8 @@ public final class OMS {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 
+        final KafkaProducer producer = new KafkaProducer<String, String>(props);
+
         HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(",")));
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
         kafkaParams.put("metadata.broker.list", brokers);
@@ -100,7 +102,7 @@ public final class OMS {
                     String factor = obj.getString("factor");
                     String result = status + "," + date + "," + gpk + "," + rms + "," + pom + "," + extTemp + "," + taskId + "," + factor;
 
-                    KafkaProducer producer = new KafkaProducer<String, String>(props);
+//                    KafkaProducer producer = new KafkaProducer<String, String>(props);
                     producer.send(new ProducerRecord<String, String>("events",
                             result));
                     return result;
@@ -156,10 +158,10 @@ public final class OMS {
                                     Float rmsAlertMin = rs.getFloat("RmsAlertMin");
                                     Float rmsEmergMax = rs.getFloat("RmsEmergMax");
                                     Float rmsEmergMin = rs.getFloat("RmsEmergMin");
-                                    System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
-                                            gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
-                                            tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
-                                            rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
+//                                    System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
+//                                            gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
+//                                            tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
+//                                            rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
 
                                     Alert += idPom + "," + String.valueOf(dateAlert);
                                     if (temperature >= tempAlertMax) Alert += "," + String.valueOf("1");
@@ -186,7 +188,8 @@ public final class OMS {
                                     else Alert += "," + String.valueOf("0");
                                     if (rms <= rmsEmergMin) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
-                                    KafkaProducer producer = new KafkaProducer<String, String>(props);
+                                    System.out.format("%s\n" , Alert);
+
                                     producer.send(new ProducerRecord<String, String>("alerts",
                                             Alert));
                                 }
