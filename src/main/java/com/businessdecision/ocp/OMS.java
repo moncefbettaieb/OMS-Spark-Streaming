@@ -1,5 +1,9 @@
 package com.businessdecision.ocp;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -20,6 +24,7 @@ import org.apache.spark.streaming.Time;
 
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.*;
+import org.tukaani.xz.XZInputStream;
 import scala.Tuple2;
 
 import org.apache.spark.SparkConf;
@@ -96,7 +101,24 @@ public final class OMS {
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
                 //df.show();
+
+
+
                 try {
+
+//                    InputStream stream = new ByteArrayInputStream(
+//                            tuple2._2().getBytes("UTF-8")
+//                    );
+//                    XZInputStream inxz = new XZInputStream(stream);
+//                    //outString = inxz.toString();
+//
+//                    byte firstByte = (byte) inxz.read();
+//                    byte[] buffer = new byte[inxz.available()];
+//                    buffer[0] = firstByte;
+//                    inxz.read(buffer, 1, buffer.length - 2);
+//                    inxz.close();
+//                    return new String(buffer);
+
                     JSONObject obj = new JSONObject(tuple2._2());
                     String status = obj.getString("status");
                     String date = obj.getJSONObject("end").getString("$date");
@@ -145,9 +167,14 @@ public final class OMS {
 
                     return result;
                 }
-                catch (JSONException e){
-                    return "Json Exception : "+e ;
+                catch (JSONException e) {
+                    return "Json Exception : " + e;
                 }
+//                } catch (UnsupportedEncodingException e) {
+//                    e.printStackTrace();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             }
         });
         lines.print();
@@ -194,11 +221,11 @@ public final class OMS {
                 });
 
                 JavaPairRDD rr = rddpair1.join(rddpair2);
-                rr.foreach(new VoidFunction<Tuple2<Integer, String>>() {
-                    public void call(Tuple2<Integer, String> t) throws Exception {
-                        System.out.println(Integer.valueOf(t._1()) + " " + t._2());
-                    }
-                });
+//                rr.foreach(new VoidFunction<Tuple2<String, String>>() {
+//                    public void call(Tuple2<String, String> t) throws Exception {
+//                        System.out.println(t._1() + " " + t._2());
+//                    }
+//                });
                 return null;
             }
         });
