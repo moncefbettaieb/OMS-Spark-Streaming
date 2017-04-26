@@ -72,9 +72,9 @@ public final class OMS {
         df.show();
         //df.cache();
 
-        final JavaPairRDD rdd2 = df.toJavaRDD().mapToPair(new PairFunction<Row, String, Integer>() {
-            public Tuple2<String, Integer> call(Row row) throws Exception {
-                return new Tuple2<String, Integer>( row.getString(1), Integer.valueOf(row.getString(0)));
+        final JavaPairRDD rdd2 = df.toJavaRDD().mapToPair(new PairFunction<Row, String, String>() {
+            public Tuple2<String, String> call(Row row) throws Exception {
+                return new Tuple2<String, String>( row.getString(1), row.getString(0));
             }
         });
 
@@ -188,14 +188,14 @@ public final class OMS {
 
         lines.foreachRDD(new Function2<JavaRDD<String>, Time, Void>() {
             public Void call(JavaRDD<String> rdd, Time time) {
-                JavaPairRDD<String, Integer> rddpair1 = rdd.mapToPair(new PairFunction<String, String, Integer>() {
-                    public Tuple2<String, Integer> call(final String readName) {
-                        return new Tuple2<String, Integer>(readName, Integer.valueOf(1));
+                JavaPairRDD<String, String> rddpair1 = rdd.mapToPair(new PairFunction<String, String, String>() {
+                    public Tuple2<String, String> call(final String readName) {
+                        return new Tuple2<String, String>("", readName);
                     }
                 });
-                JavaPairRDD<String, Integer> rddpair2 = rdd2.mapToPair(new PairFunction<String, String, Integer>() {
-                    public Tuple2<String, Integer> call(final String readName) {
-                        return new Tuple2<String, Integer>(readName, Integer.valueOf(1));
+                JavaPairRDD<String, Integer> rddpair2 = rdd2.mapToPair(new PairFunction<String, String, String>() {
+                    public Tuple2<String, String> call(final String readName) {
+                        return new Tuple2<String, String>("", readName);
                     }
                 });
 
