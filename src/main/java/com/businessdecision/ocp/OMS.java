@@ -28,7 +28,7 @@ import org.json.JSONObject;
 import scala.Tuple2;
 
 public final class OMS {
-    private static final Pattern dot = Pattern.compile(",");
+    private static final Pattern dot = Pattern.compile(" ");
 
     public static void main(String[] args) throws ClassNotFoundException {
         if (args.length < 2) {
