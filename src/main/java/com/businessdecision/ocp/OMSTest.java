@@ -166,8 +166,6 @@ public final class OMSTest {
                             "jdbc:mysql://10.21.62.49/ocp_maint", "root", "SPLXP026");
                     String query = "SELECT * FROM Alert WHERE idPom = ?";
 
-                    //mStatement = st.prepareStatement("select * from Alert");
-
 
                     List<String> list =rdd.collect();
 
@@ -179,29 +177,50 @@ public final class OMSTest {
                             System.out.format("%s\n", value);
                             st = mcConnect.prepareStatement(query);
                             String[] values = value.split(",");
+
+
                             if(values.length>4){
-                            st.setString(1, values[4]);
+                                String pom  = values[4];
+                                Float gpk = Float.valueOf(values[2]);
+                                Float rms = Float.valueOf(values[3]);
+                                Float temperature = Float.valueOf(values[5]);
+                            st.setString(1, pom);
                             ResultSet rs = st.executeQuery();
                             while (rs.next()) {
                                 int idArlert = rs.getInt("idAlert");
                                 String idPom = rs.getString("idPom");
                                 Date dateAlert = rs.getDate("dateAlert");
-                                Float GpkAlertMax = rs.getFloat("GpkAlertMax");
-                                Float GpkAlertMin = rs.getFloat("GpkAlertMin");
-                                Float GpkEmergMax = rs.getFloat("GpkEmergMax");
-                                Float GpkEmergMin = rs.getFloat("GpkEmergMin");
-                                Float TempAlertMax = rs.getFloat("TempAlertMax");
-                                Float TempAlertMin = rs.getFloat("TempAlertMin");
-                                Float TempEmergMax = rs.getFloat("TempEmergMax");
-                                Float TempEmergMin = rs.getFloat("TempEmergMin");
-                                Float RmsAlertMax = rs.getFloat("RmsAlertMax");
-                                Float RmsAlertMin = rs.getFloat("RmsAlertMin");
-                                Float RmsEmergMax = rs.getFloat("RmsEmergMax");
-                                Float RmsEmergMin = rs.getFloat("RmsEmergMin");
-
-
+                                Float gpkAlertMax = rs.getFloat("GpkAlertMax");
+                                Float gpkAlertMin = rs.getFloat("GpkAlertMin");
+                                Float gpkEmergMax = rs.getFloat("GpkEmergMax");
+                                Float gpkEmergMin = rs.getFloat("GpkEmergMin");
+                                Float tempAlertMax = rs.getFloat("TempAlertMax");
+                                Float tempAlertMin = rs.getFloat("TempAlertMin");
+                                Float tempEmergMax = rs.getFloat("TempEmergMax");
+                                Float tempEmergMin = rs.getFloat("TempEmergMin");
+                                Float rmsAlertMax = rs.getFloat("RmsAlertMax");
+                                Float rmsAlertMin = rs.getFloat("RmsAlertMin");
+                                Float rmsEmergMax = rs.getFloat("RmsEmergMax");
+                                Float rmsEmergMin = rs.getFloat("RmsEmergMin");
                                 // print the results
-                                System.out.format("%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert, GpkAlertMax, GpkAlertMin, GpkEmergMax);
+                                System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
+                                        gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
+                                        tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
+                                        rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
+                                if(temperature >= tempAlertMax) System.out.format("tempAlertMax \n");
+                                if(temperature <= tempAlertMin) System.out.format("tempAlertMin \n");
+                                if(temperature >= tempEmergMax) System.out.format("tempEmergMax \n");
+                                if(temperature <= tempEmergMin) System.out.format("tempEmergMin \n");
+
+                                if(gpk >= gpkAlertMax) System.out.format("gpkAlertMax \n");
+                                if(gpk <= gpkAlertMin) System.out.format("gpkAlertMin \n");
+                                if(gpk >= gpkEmergMax) System.out.format("gpkEmergMax \n");
+                                if(gpk <= gpkEmergMin) System.out.format("gpkEmergMin \n");
+
+                                if(rms >= rmsAlertMax) System.out.format("rmsAlertMax \n");
+                                if(rms <= rmsAlertMin) System.out.format("rmsAlertMin \n");
+                                if(rms >= rmsEmergMax) System.out.format("rmsEmergMax \n");
+                                if(rms <= rmsEmergMin) System.out.format("rmsEmergMin \n");
                             }
                             }
                         }
