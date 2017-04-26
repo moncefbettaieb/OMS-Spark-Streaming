@@ -159,14 +159,16 @@ public final class OMSTest {
                     throws SQLException {
 
                 Connection mcConnect = null;
-                PreparedStatement mStatement = null;
+                Statement st = null;
+                //PreparedStatement mStatement = null;
                 try {
                     mcConnect = DriverManager.getConnection(
                             "jdbc:mysql://10.21.62.49/ocp_maint", "root", "SPLXP026");
-                    Statement st = mcConnect.createStatement();
-                    //mStatement = st.prepareStatement("select * from Alert");
                     String query = "select * from Alert";
-                    ResultSet rs = mStatement.executeQuery(query);
+                    st = mcConnect.createStatement();
+                    //mStatement = st.prepareStatement("select * from Alert");
+
+                    ResultSet rs = st.executeQuery(query);
                     List<String> list =rdd.collect();
 
                     while (rs.next())
@@ -205,8 +207,8 @@ public final class OMSTest {
                     if (mcConnect != null) {
                         mcConnect.close();
                     }
-                    if (mStatement != null) {
-                        mStatement.close();
+                    if (st != null) {
+                        st.close();
                     }
                 }
 

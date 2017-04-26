@@ -6,7 +6,9 @@
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6bd958f-e019-4f5a-9bff-1a5392be3e46" name="Default" comment="" />
+    <list default="true" id="f6bd958f-e019-4f5a-9bff-1a5392be3e46" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/businessdecision/ocp/OMSTest.java" afterPath="$PROJECT_DIR$/src/main/java/com/businessdecision/ocp/OMSTest.java" />
+    </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -73,8 +75,8 @@
       <file leaf-file-name="OMSTest.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/businessdecision/ocp/OMSTest.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="325">
-              <caret line="211" column="0" lean-forward="true" selection-start-line="211" selection-start-column="0" selection-end-line="211" selection-end-column="0" />
+            <state relative-caret-position="51">
+              <caret line="161" column="29" lean-forward="false" selection-start-line="161" selection-start-column="29" selection-end-line="161" selection-end-column="29" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#2030#2038#0" expanded="true" />
@@ -83,10 +85,10 @@
                 <element signature="e#6664#6665#0" expanded="true" />
                 <element signature="e#6736#6943#0" expanded="true" />
                 <element signature="e#6942#6943#0" expanded="true" />
-                <element signature="e#7047#9775#0" expanded="true" />
-                <element signature="e#9774#9775#0" expanded="true" />
-                <marker date="1493216047303" expanded="true" signature="7586:7605" ph="select * fro... Alert" />
-                <marker date="1493216047303" expanded="true" signature="7645:7664" ph="select * fro... Alert" />
+                <element signature="e#7047#9781#0" expanded="true" />
+                <element signature="e#9780#9781#0" expanded="true" />
+                <marker date="1493216511370" expanded="true" signature="7541:7560" ph="select * fro... Alert" />
+                <marker date="1493216511370" expanded="true" signature="7673:7692" ph="select * fro... Alert" />
               </folding>
             </state>
           </provider>
@@ -904,8 +906,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/businessdecision/ocp/OMSTest.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
-          <caret line="211" column="0" lean-forward="true" selection-start-line="211" selection-start-column="0" selection-end-line="211" selection-end-column="0" />
+        <state relative-caret-position="51">
+          <caret line="161" column="29" lean-forward="false" selection-start-line="161" selection-start-column="29" selection-end-line="161" selection-end-column="29" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#2030#2038#0" expanded="true" />
@@ -914,10 +916,10 @@
             <element signature="e#6664#6665#0" expanded="true" />
             <element signature="e#6736#6943#0" expanded="true" />
             <element signature="e#6942#6943#0" expanded="true" />
-            <element signature="e#7047#9775#0" expanded="true" />
-            <element signature="e#9774#9775#0" expanded="true" />
-            <marker date="1493216047303" expanded="true" signature="7586:7605" ph="select * fro... Alert" />
-            <marker date="1493216047303" expanded="true" signature="7645:7664" ph="select * fro... Alert" />
+            <element signature="e#7047#9781#0" expanded="true" />
+            <element signature="e#9780#9781#0" expanded="true" />
+            <marker date="1493216511370" expanded="true" signature="7541:7560" ph="select * fro... Alert" />
+            <marker date="1493216511370" expanded="true" signature="7673:7692" ph="select * fro... Alert" />
           </folding>
         </state>
       </provider>
