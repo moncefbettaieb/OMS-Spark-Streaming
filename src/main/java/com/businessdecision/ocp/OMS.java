@@ -1,9 +1,5 @@
 package com.businessdecision.ocp;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -12,9 +8,9 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
-import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.json.*;
@@ -24,7 +20,6 @@ import org.apache.spark.streaming.Time;
 
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.*;
-import org.tukaani.xz.XZInputStream;
 import scala.Tuple2;
 
 import org.apache.spark.SparkConf;
@@ -207,7 +202,25 @@ public final class OMS {
         //rdd =>rdd.join(geoData))
         //lines.tran
 
-        lines.foreachRDD(new Function2<JavaRDD<String>, Time, Void>() {
+        JavaDStream<String> words = lines.flatMap(
+                new FlatMapFunction<String, String>() {
+                    public Iterable<String> call(String x) {
+                        return Arrays.asList(x.split(","));
+                    }});
+
+//        words.foreach(new Function<JavaRDD<String>, Void>() {
+//            public Void call(JavaRDD<String> stringJavaRDD) throws Exception {
+//                stringJavaRDD.map(new Function<String, Object>() {
+//                    public String[] call(String s) {
+//                        String[] x = s.split(",");
+//                        return x;
+//                    }
+//                });
+//                return null;
+//            }
+//        });
+
+        words.foreachRDD(new Function2<JavaRDD<String>, Time, Void>() {
             public Void call(JavaRDD<String> rdd, Time time) {
                 JavaPairRDD<String, String> rddpair1 = rdd.mapToPair(new PairFunction<String, String, String>() {
                     public Tuple2<String, String> call(final String readName) {
