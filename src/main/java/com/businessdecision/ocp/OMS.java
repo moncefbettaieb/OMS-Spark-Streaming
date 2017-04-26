@@ -211,6 +211,7 @@ public final class OMS {
             public Void call(JavaRDD<String> rdd, Time time) {
                 JavaPairRDD<String, String> rddpair1 = rdd.mapToPair(new PairFunction<String, String, String>() {
                     public Tuple2<String, String> call(final String readName) {
+                        System.out.println(readName);
                         return new Tuple2<String, String>("", readName);
                     }
                 });
@@ -221,6 +222,7 @@ public final class OMS {
                 });
 
                 JavaPairRDD rr = rddpair1.join(rddpair2);
+                System.out.println(rr.count());
 //                rr.foreach(new VoidFunction<Tuple2<String, String>>() {
 //                    public void call(Tuple2<String, String> t) throws Exception {
 //                        System.out.println(t._1() + " " + t._2());
