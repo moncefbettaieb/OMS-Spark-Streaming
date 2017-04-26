@@ -33,7 +33,7 @@ import scala.Tuple2;
 public final class OMSTest {
     private static final Pattern SPACE = Pattern.compile(" ");
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         if (args.length < 2) {
             System.err.println("Usage: OMS Maintenance Spark Streaming <brokers> <topics>\n" +
                     "  <brokers> is a list of one or more Kafka brokers\n" +
@@ -45,6 +45,8 @@ public final class OMSTest {
                 "OMS Maintenance Spark Streaming");
         JavaStreamingContext ssc = new JavaStreamingContext(sparkConf,
                 Durations.seconds(1));
+
+        Class.forName("com.mysql.jdbc.Driver");
 
         String brokers = args[0];
         String topics = args[1];
