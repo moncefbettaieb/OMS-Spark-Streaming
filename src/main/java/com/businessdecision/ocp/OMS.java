@@ -194,11 +194,11 @@ public final class OMS {
                 });
 
                 JavaPairRDD rr = rddpair1.join(rddpair2);
-//                rr.foreach(new VoidFunction<Tuple2<String, String>>() {
-//                    public void call(Tuple2<String, String> t) throws Exception {
-//                        System.out.println(t._1() + " " + t._2());
-//                    }
-//                });
+                rr.foreach(new VoidFunction<Tuple2<Integer, String>>() {
+                    public void call(Tuple2<Integer, String> t) throws Exception {
+                        System.out.println(Integer.valueOf(t._1()) + " " + t._2());
+                    }
+                });
                 return null;
             }
         });
