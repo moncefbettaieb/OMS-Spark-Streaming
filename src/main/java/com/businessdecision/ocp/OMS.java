@@ -11,6 +11,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.json.*;
@@ -67,7 +68,8 @@ public final class OMS {
 //                .persist(StorageLevel.MEMORY_AND_DISK_SER());
 
         // Looks the schema of this DataFrame.
-        //df.printSchema();
+        df.printSchema();
+        df.show();
         //df.cache();
 
         final JavaPairRDD rdd2 = df.toJavaRDD().mapToPair(new PairFunction<Row, String, String>() {
@@ -135,7 +137,7 @@ public final class OMS {
                             .load()
                             .cache();
 
-                    List<String> metrics = Arrays.asList(result.split(","));
+//                    List<String> metrics = Arrays.asList(result.split(","));
                   //  JavaRDD<String> rdd1 = sc.parallelize(metrics);
                   //  JavaPairRDD<String,String> rdd0 = JavaPairRDD.fromJavaRDD(rdd1  );
 
@@ -199,7 +201,12 @@ public final class OMS {
                     }
                 });
 
-                JavaPairRDD<String, Tuple2<Integer, Integer>> rr = counts.join(ss);
+                JavaPairRDD rr = counts.join(ss);
+                rr.foreach(new VoidFunction<Tuple2<String, String>>() {
+                    public void call(Tuple2<String, String> t) throws Exception {
+                        System.out.println(t._1() + " " + t._2());
+                    }
+                });
                 return null;
             }
         });
