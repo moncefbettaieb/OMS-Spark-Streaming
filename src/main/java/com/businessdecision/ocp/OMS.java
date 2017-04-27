@@ -70,11 +70,11 @@ public final class OMS {
         );
 
 
-         try {
-             messages.saveAsHadoopFiles("/user/moncef/", "xz");
-         }catch (Exception e){
-             System.out.format("%s\n", e);
-         }
+//         try {
+//             messages.saveAsHadoopFiles("/user/moncef/", "xz");
+//         }catch (Exception e){
+//             System.out.format("%s\n", e);
+//         }
 
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
