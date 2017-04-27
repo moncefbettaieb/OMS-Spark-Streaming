@@ -80,18 +80,20 @@ public static void main(String[] args) throws ClassNotFoundException {
     );
 
 
+    messages.saveAsHadoopFiles("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/","xz",Text.class, IntWritable.class, TextOutputFormat.class);
+
     //messages.saveAsHadoopFiles("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/", "xz", Text.class, IntWritable.class, TextOutputFormat.class);
 
-
-    messages.foreach(new Function<JavaPairRDD<String, String>, Void>() {
-        public Void call(JavaPairRDD<String, String> stringJavaPairRDD) throws Exception {
-            if(!stringJavaPairRDD.partitions().isEmpty()) {
-                String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
-                stringJavaPairRDD.saveAsHadoopFile("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/" + timeStamp , Text.class, Text.class, TextOutputFormat.class);
-            }
-            return null;
-        }
-    });
+//    messages.print();
+//    messages.foreach(new Function<JavaPairRDD<String, String>, Void>() {
+//        public Void call(JavaPairRDD<String, String> stringJavaPairRDD) throws Exception {
+//            if(!stringJavaPairRDD.partitions().isEmpty()) {
+//                String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
+//                stringJavaPairRDD.saveAsHadoopFile("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/" + timeStamp , Text.class, Text.class, TextOutputFormat.class);
+//            }
+//            return null;
+//        }
+//    });
 //            saveAsHadoopFiles("/user/moncef/test", "xz");
 //                try {
 //// TODO add decompression
