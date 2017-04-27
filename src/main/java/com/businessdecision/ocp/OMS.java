@@ -47,6 +47,10 @@ public static void main(String[] args) throws ClassNotFoundException {
                 "  <topics> is a list of one or more kafka topics to consume from\n\n");
         System.exit(1);
     }
+
+    //TODO change local[2]
+
+    //TODO change words
     Class.forName("com.mysql.jdbc.Driver");
     final SparkConf sparkConf = new SparkConf().setMaster("local[2]").setAppName(
             "OMS Maintenance Spark Streaming");
@@ -81,8 +85,6 @@ public static void main(String[] args) throws ClassNotFoundException {
 
 
 //    messages.saveAsHadoopFiles("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/","xz",Text.class, IntWritable.class, TextOutputFormat.class);
-
-
 
     //messages.saveAsHadoopFiles("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/", "xz", Text.class, IntWritable.class, TextOutputFormat.class);
 
