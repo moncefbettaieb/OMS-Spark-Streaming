@@ -2,6 +2,7 @@ package com.businessdecision.ocp;
 
 import java.sql.*;
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -82,9 +83,11 @@ public static void main(String[] args) throws ClassNotFoundException {
 
 
     messages.foreach(new Function<JavaPairRDD<String, String>, Void>() {
-        public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
-            String date = FastDateFormat.getInstance("dd-MM-yyyy").format(System.currentTimeMillis( ));
-            stringStringJavaPairRDD.saveAsHadoopFile("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/"+date+".xz", Text.class, IntWritable.class, TextOutputFormat.class);
+        public Void call(JavaPairRDD<String, String> stringJavaPairRDD) throws Exception {
+            if(!stringJavaPairRDD.partitions().isEmpty()) {
+                String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
+                stringJavaPairRDD.saveAsHadoopFile("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/" + timeStamp , Text.class, Text.class, TextOutputFormat.class);
+            }
             return null;
         }
     });
