@@ -71,7 +71,7 @@ public final class OMS {
 
 
          try {
-             messages.saveAsHadoopFiles("/user/moncef/", "xz");
+             messages.saveAsHadoopFiles("/user/moncef/test", "xz");
          }catch (RuntimeException e){
              System.out.format("%s\n", e);
          }
