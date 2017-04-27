@@ -77,8 +77,15 @@ public static void main(String[] args) throws ClassNotFoundException {
     );
 
 
-    messages.saveAsHadoopFiles("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/", "xz", Text.class, IntWritable.class, TextOutputFormat.class);
+    //messages.saveAsHadoopFiles("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/", "xz", Text.class, IntWritable.class, TextOutputFormat.class);
 
+
+    messages.foreach(new Function<JavaPairRDD<String, String>, Void>() {
+        public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
+            stringStringJavaPairRDD.saveAsHadoopFile("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/", Text.class, IntWritable.class, TextOutputFormat.class);
+            return null;
+        }
+    });
 //            saveAsHadoopFiles("/user/moncef/test", "xz");
 //                try {
 //// TODO add decompression
