@@ -69,6 +69,10 @@ public final class OMS {
                 topicsSet
         );
 
+
+        messages.saveAsHadoopFiles("/user/moncef/","xz");
+
+
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
                 try {
@@ -136,6 +140,7 @@ public final class OMS {
                                 String Alert = "";
                                 System.out.format("%s\n", Alert);
                                 String pom = values[4];
+                                String date = values[1];
                                 Float gpk = Float.valueOf(values[2]);
                                 Float rms = Float.valueOf(values[3]);
                                 Float temperature = Float.valueOf(values[5]);
@@ -163,7 +168,7 @@ public final class OMS {
                                             tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
                                             rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
 
-                                    Alert += idPom + "," + String.valueOf(dateAlert);
+                                    Alert += idPom + "," + date;
                                     if (temperature >= tempAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
                                     if (temperature <= tempAlertMin) Alert += "," + String.valueOf("1");
