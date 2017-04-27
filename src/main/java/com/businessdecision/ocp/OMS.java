@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import kafka.serializer.StringDecoder;
+import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.TextOutputFormat;
@@ -82,7 +83,8 @@ public static void main(String[] args) throws ClassNotFoundException {
 
     messages.foreach(new Function<JavaPairRDD<String, String>, Void>() {
         public Void call(JavaPairRDD<String, String> stringStringJavaPairRDD) throws Exception {
-            stringStringJavaPairRDD.saveAsHadoopFile("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/", Text.class, IntWritable.class, TextOutputFormat.class);
+            String date = FastDateFormat.getInstance("dd-MM-yyyy").format(System.currentTimeMillis( ));
+            stringStringJavaPairRDD.saveAsHadoopFile("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/"+date+".xz", Text.class, IntWritable.class, TextOutputFormat.class);
             return null;
         }
     });
