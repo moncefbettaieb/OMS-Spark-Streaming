@@ -11,7 +11,7 @@ import kafka.serializer.StringDecoder;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.TextOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -88,15 +88,15 @@ public static void main(String[] args) throws ClassNotFoundException {
 
 //    messages.print();
 
-//    messages.foreachRDD(new Function<JavaPairRDD<String, String>, Void>() {
-//        public Void call(JavaPairRDD<String, String> stringJavaPairRDD) throws Exception {
-//            if(!stringJavaPairRDD.partitions().isEmpty()) {
-//                String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
-//                stringJavaPairRDD.saveAsHadoopFile("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/" + timeStamp , Text.class, Text.class, TextOutputFormat.class);
-//            }
-//            return null;
-//        }
-//    });
+    messages.foreachRDD(new Function<JavaPairRDD<String, String>, Void>() {
+        public Void call(JavaPairRDD<String, String> stringJavaPairRDD) throws Exception {
+            if(!stringJavaPairRDD.partitions().isEmpty()) {
+                String timeStamp = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new java.util.Date());
+                stringJavaPairRDD.saveAsNewAPIHadoopFile("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/" + timeStamp , Text.class, Text.class, TextOutputFormat.class);
+            }
+            return null;
+        }
+    });
 //            saveAsHadoopFiles("/user/moncef/test", "xz");
 //                try {
 //// TODO add decompression
