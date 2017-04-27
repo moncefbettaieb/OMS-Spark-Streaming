@@ -6,10 +6,14 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 import kafka.serializer.StringDecoder;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.TextOutputFormat;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
@@ -30,58 +34,57 @@ import scala.Tuple2;
 public final class OMS {
     private static final Pattern dot = Pattern.compile(" ");
 
-    public static void main(String[] args) throws ClassNotFoundException {
-        if (args.length < 2) {
-            System.err.println("Usage: OMS Maintenance Spark Streaming <brokers> <topics>\n" +
-                    "  <brokers> is a list of one or more Kafka brokers\n" +
-                    "  <topics> is a list of one or more kafka topics to consume from\n\n");
-            System.exit(1);
-        }
-        Class.forName("com.mysql.jdbc.Driver");
-        SparkConf sparkConf = new SparkConf().setMaster("local[2]").setAppName(
-                "OMS Maintenance Spark Streaming");
-        JavaStreamingContext ssc = new JavaStreamingContext(sparkConf,
-                Durations.seconds(1));
-
-        String brokers = args[0];
-        String topics = args[1];
-        final Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.21.62.48:9092");
-        props.put(ProducerConfig.RETRIES_CONFIG, "3");
-        props.put(ProducerConfig.ACKS_CONFIG, "all");
-        props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "none");
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 200);
-        props.put(ProducerConfig.BLOCK_ON_BUFFER_FULL_CONFIG, true);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
-
-        HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(",")));
-        HashMap<String, String> kafkaParams = new HashMap<String, String>();
-        kafkaParams.put("metadata.broker.list", brokers);
-
-        JavaPairInputDStream<String, String> messages = KafkaUtils.createDirectStream(
-                ssc,
-                String.class,
-                String.class,
-                StringDecoder.class,
-                StringDecoder.class,
-                kafkaParams,
-                topicsSet
-        );
-
-
-         try {
-             messages.saveAsHadoopFiles("/user/moncef/test", "xz");
-         }catch (RuntimeException e){
-             System.out.format("%s\n", e);
-         }
-//
-//        JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
 //            public String call(Tuple2<String, String> tuple2) {
+//        JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
+//
+public static void main(String[] args) throws ClassNotFoundException {
+    if (args.length < 2) {
+        System.err.println("Usage: OMS Maintenance Spark Streaming <brokers> <topics>\n" +
+                "  <brokers> is a list of one or more Kafka brokers\n" +
+                "  <topics> is a list of one or more kafka topics to consume from\n\n");
+        System.exit(1);
+    }
+    Class.forName("com.mysql.jdbc.Driver");
+    final SparkConf sparkConf = new SparkConf().setMaster("local[2]").setAppName(
+            "OMS Maintenance Spark Streaming");
+    JavaStreamingContext ssc = new JavaStreamingContext(sparkConf,
+            Durations.seconds(1));
+
+    String brokers = args[0];
+    String topics = args[1];
+    final Properties props = new Properties();
+    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.21.62.48:9092");
+    props.put(ProducerConfig.RETRIES_CONFIG, "3");
+    props.put(ProducerConfig.ACKS_CONFIG, "all");
+    props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "none");
+    props.put(ProducerConfig.BATCH_SIZE_CONFIG, 200);
+    props.put(ProducerConfig.BLOCK_ON_BUFFER_FULL_CONFIG, true);
+    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
+
+    HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(",")));
+    HashMap<String, String> kafkaParams = new HashMap<String, String>();
+    kafkaParams.put("metadata.broker.list", brokers);
+
+    JavaPairInputDStream<String, String> messages = KafkaUtils.createDirectStream(
+            ssc,
+            String.class,
+            String.class,
+            StringDecoder.class,
+            StringDecoder.class,
+            kafkaParams,
+            topicsSet
+    );
+
+
+    messages.saveAsHadoopFiles("hdfs://10.21.62.48:8020/user/moncef.bettaeib/stream/", "xz", Text.class, IntWritable.class, TextOutputFormat.class);
+
+//            saveAsHadoopFiles("/user/moncef/test", "xz");
 //                try {
 //// TODO add decompression
 ////                    InputStream stream = new ByteArrayInputStream(
 ////                            tuple2._2().getBytes("UTF-8")
+
 ////                    );
 ////                    XZInputStream inxz = new XZInputStream(stream);
 ////                    //outString = inxz.toString();
