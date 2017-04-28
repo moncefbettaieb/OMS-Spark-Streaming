@@ -38,7 +38,7 @@ public final class OMS {
             System.exit(1);
         }
         Class.forName("com.mysql.jdbc.Driver");
-        SparkConf sparkConf = new SparkConf().setMaster("local[2]").setAppName(
+        SparkConf sparkConf = new SparkConf().setAppName(
                 "OMS Maintenance Spark Streaming");
         JavaStreamingContext ssc = new JavaStreamingContext(sparkConf,
                 Durations.seconds(1));
@@ -72,7 +72,8 @@ public final class OMS {
         JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
                 try {
-// TODO add decompression
+
+// TODO add d0ecompression
 //                    InputStream stream = new ByteArrayInputStream(
 //                            tuple2._2().getBytes("UTF-8")
 //                    );
@@ -128,12 +129,14 @@ public final class OMS {
                     String query = "SELECT * FROM Alert WHERE idPom = ?";
                     List<String> list = rdd.collect();
                     if (list.size() > 0) {
+                        String Alert = "";
                         for (String value : list) {
                             System.out.format("%s\n", value);
+                            Alert = "";
                             st = mcConnect.prepareStatement(query);
                             String[] values = value.split(",");
                             if (values.length > 4) {
-                                String Alert = "";
+
                                 String date = values[1];
                                 String pom = values[4];
                                 Float gpk = Float.valueOf(values[2]);
@@ -187,12 +190,14 @@ public final class OMS {
                                     else Alert += "," + String.valueOf("0");
                                     if (rms <= rmsEmergMin) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
-                                    KafkaProducer producer = new KafkaProducer<String, String>(props);
-                                    producer.send(new ProducerRecord<String, String>("alerts",
-                                            Alert));
+
+
                                 }
                             }
                         }
+                        KafkaProducer producer = new KafkaProducer<String, String>(props);
+                        producer.send(new ProducerRecord<String, String>("alerts",
+                                Alert));
                     }
                 } finally {
                     if (mcConnect != null) {
