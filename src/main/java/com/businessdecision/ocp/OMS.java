@@ -111,7 +111,7 @@ public final class OMS {
             }
         });
 
-        System.out.format("%s\n", events.count());
+        //System.out.format("%s\n", events.count());
 
         JavaDStream<String> alerts = events
                 .flatMap(new FlatMapFunction<String, String>() {
@@ -120,7 +120,7 @@ public final class OMS {
                     }
                 });
 
-        alerts.foreachRDD(new Function2<JavaRDD<String>, Time, Void>() {
+           alerts.foreachRDD(new Function2<JavaRDD<String>, Time, Void>() {
             public Void call(JavaRDD<String> rdd, Time time)
                     throws SQLException {
                 Connection mcConnect = null;
