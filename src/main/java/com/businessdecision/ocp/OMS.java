@@ -134,6 +134,7 @@ public final class OMS {
                             String[] values = value.split(",");
                             if (values.length > 4) {
                                 String Alert = "";
+                                String date = values[1];
                                 String pom = values[4];
                                 Float gpk = Float.valueOf(values[2]);
                                 Float rms = Float.valueOf(values[3]);
@@ -161,7 +162,7 @@ public final class OMS {
                                             tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
                                             rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
 
-                                    Alert += idPom + "," + String.valueOf(dateAlert);
+                                    Alert += idPom + "," + date;
                                     if (temperature >= tempAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
                                     if (temperature <= tempAlertMin) Alert += "," + String.valueOf("1");
