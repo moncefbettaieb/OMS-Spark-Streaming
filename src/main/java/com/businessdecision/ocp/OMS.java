@@ -69,7 +69,7 @@ public final class OMS {
                 topicsSet
         );
 
-        JavaDStream<String> lines = messages.map(new Function<Tuple2<String, String>, String>() {
+        JavaDStream<String> events = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
                 try {
 
@@ -111,14 +111,16 @@ public final class OMS {
             }
         });
 
-        JavaDStream<String> words = lines
+        System.out.format("%s\n", events.count());
+
+        JavaDStream<String> alerts = events
                 .flatMap(new FlatMapFunction<String, String>() {
                     public Iterable<String> call(String x) {
                         return Lists.newArrayList(dot.split(x));
                     }
                 });
 
-        words.foreachRDD(new Function2<JavaRDD<String>, Time, Void>() {
+        alerts.foreachRDD(new Function2<JavaRDD<String>, Time, Void>() {
             public Void call(JavaRDD<String> rdd, Time time)
                     throws SQLException {
                 Connection mcConnect = null;
@@ -131,7 +133,7 @@ public final class OMS {
                     if (list.size() > 0) {
                         String Alert = "";
                         for (String value : list) {
-                            System.out.format("%s\n", value);
+                            //System.out.format("%s\n", value);
                             Alert = "";
                             st = mcConnect.prepareStatement(query);
                             String[] values = value.split(",");
@@ -160,11 +162,10 @@ public final class OMS {
                                     Float rmsAlertMin = rs.getFloat("RmsAlertMin");
                                     Float rmsEmergMax = rs.getFloat("RmsEmergMax");
                                     Float rmsEmergMin = rs.getFloat("RmsEmergMin");
-                                    System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
-                                            gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
-                                            tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
-                                            rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
-
+//                                    System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
+//                                            gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
+//                                            tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
+//                                            rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
                                     Alert += idPom + "," + date;
                                     if (temperature >= tempAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
