@@ -169,27 +169,27 @@ public final class OMS {
                                     Alert += idPom + "," + date;
                                     if (temperature >= tempAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
-                                    if (temperature <= tempAlertMin) Alert += "," + String.valueOf("1");
+                                    if (temperature >= tempAlertMin && temperature < tempAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
                                     if (temperature >= tempEmergMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
-                                    if (temperature <= tempEmergMin) Alert += "," + String.valueOf("1");
+                                    if (temperature >= tempEmergMin && temperature < tempEmergMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
                                     if (gpk >= gpkAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
-                                    if (gpk <= gpkAlertMin) Alert += "," + String.valueOf("1");
+                                    if (gpk >= gpkAlertMin && gpk < gpkAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
                                     if (gpk >= gpkEmergMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
-                                    if (gpk <= gpkEmergMin) Alert += "," + String.valueOf("1");
+                                    if (gpk >= gpkEmergMin && gpk < gpkEmergMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
                                     if (rms >= rmsAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
-                                    if (rms <= rmsAlertMin) Alert += "," + String.valueOf("1");
+                                    if (rms >= rmsAlertMin && rms < rmsAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
                                     if (rms >= rmsEmergMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
-                                    if (rms <= rmsEmergMin) Alert += "," + String.valueOf("1");
+                                    if (rms >= rmsEmergMin && rms < rmsEmergMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
 
 
