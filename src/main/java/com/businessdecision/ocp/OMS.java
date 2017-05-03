@@ -30,6 +30,9 @@ import scala.Tuple2;
 public final class OMS {
     private static final Pattern dot = Pattern.compile(" ");
 
+    //TODO comments
+
+
     public static void main(String[] args) throws ClassNotFoundException {
         if (args.length < 2) {
             System.err.println("Usage: OMS Maintenance Spark Streaming <brokers> <topics>\n" +
@@ -41,7 +44,7 @@ public final class OMS {
         SparkConf sparkConf = new SparkConf().setAppName(
                 "OMS Maintenance Spark Streaming");
         JavaStreamingContext ssc = new JavaStreamingContext(sparkConf,
-                Durations.seconds(1));
+                Durations.seconds(5));
 
         String brokers = args[0];
         String topics = args[1];
@@ -59,6 +62,9 @@ public final class OMS {
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
         kafkaParams.put("metadata.broker.list", brokers);
 
+        JavaDStream<byte[]> test = ssc.binaryRecordsStream("/user/moncef.bettaeib/", 1000);
+
+        System.out.printf("%s \n", test.count());
         JavaPairInputDStream<String, String> messages = KafkaUtils.createDirectStream(
                 ssc,
                 String.class,
@@ -68,6 +74,7 @@ public final class OMS {
                 kafkaParams,
                 topicsSet
         );
+
 
         JavaDStream<String> events = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
@@ -110,6 +117,7 @@ public final class OMS {
                 }
             }
         });
+
 
         //System.out.format("%s\n", events.count());
 
@@ -191,8 +199,6 @@ public final class OMS {
                                     else Alert += "," + String.valueOf("0");
                                     if (rms <= rmsEmergMin && rms > rmsAlertMin) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
-
-
                                 }
                             }
                         }
