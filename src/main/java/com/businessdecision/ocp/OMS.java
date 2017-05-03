@@ -64,6 +64,7 @@ public final class OMS {
 
         JavaDStream<byte[]> test = ssc.binaryRecordsStream("/user/moncef.bettaeib/", 1000);
 
+        test.print();
         System.out.printf("%s \n", test.count());
         JavaPairInputDStream<String, String> messages = KafkaUtils.createDirectStream(
                 ssc,
