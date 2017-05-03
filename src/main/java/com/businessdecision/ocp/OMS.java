@@ -58,14 +58,14 @@ public final class OMS {
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringSerializer");
 
-        HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(",")));
+        HashSet<String> topicsSet = new HashSet<String>(Arrays.asList(topics.split(" ")));
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
         kafkaParams.put("metadata.broker.list", brokers);
 
-        JavaDStream<byte[]> test = ssc.binaryRecordsStream("hdfs://10.21.62.48:9000/user/moncef.bettaeib/streams/", 10000);
+        //JavaDStream<byte[]> test = ssc.binaryRecordsStream("hdfs://10.21.62.48:9000/user/moncef.bettaeib/streams/", 10000);
 
-        test.print();
-        System.out.printf("%s \n", test.count());
+        //test.print();
+        //System.out.printf("%s \n", test.count());
         JavaPairInputDStream<String, String> messages = KafkaUtils.createDirectStream(
                 ssc,
                 String.class,
