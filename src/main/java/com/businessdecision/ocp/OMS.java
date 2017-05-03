@@ -44,7 +44,7 @@ public final class OMS {
         SparkConf sparkConf = new SparkConf().setAppName(
                 "OMS Maintenance Spark Streaming");
         JavaStreamingContext ssc = new JavaStreamingContext(sparkConf,
-                Durations.seconds(5));
+                Durations.seconds(30));
 
         String brokers = args[0];
         String topics = args[1];
@@ -62,7 +62,7 @@ public final class OMS {
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
         kafkaParams.put("metadata.broker.list", brokers);
 
-        JavaDStream<byte[]> test = ssc.binaryRecordsStream("/user/moncef.bettaeib/", 1000);
+        JavaDStream<byte[]> test = ssc.binaryRecordsStream("/user/moncef.bettaeib/", 10000);
 
         test.print();
         System.out.printf("%s \n", test.count());
