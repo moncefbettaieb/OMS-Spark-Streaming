@@ -147,7 +147,6 @@ public final class OMS {
                             st = mcConnect.prepareStatement(query);
                             String[] values = value.split(",");
                             if (values.length > 4) {
-
                                 String date = values[1];
                                 String pom = values[4];
                                 Float gpk = Float.valueOf(values[2]);
