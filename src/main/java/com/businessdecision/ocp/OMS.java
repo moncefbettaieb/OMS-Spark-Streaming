@@ -40,14 +40,19 @@ public final class OMS {
                     "  <topics> is a list of one or more kafka topics to consume from\n\n");
             System.exit(1);
         }
+        //Loading the class Mysql Driver
         Class.forName("com.mysql.jdbc.Driver");
+        //Create a sparkCof
         SparkConf sparkConf = new SparkConf().setAppName(
                 "OMS Maintenance Spark Streaming");
+        //Create a JavaStreamingContext with 30 seconds intervall
         JavaStreamingContext ssc = new JavaStreamingContext(sparkConf,
                 Durations.seconds(30));
-
+        // list of brokers passed as first argument to the application
         String brokers = args[0];
+        // list of topics passed as second argument to the application
         String topics = args[1];
+        // create the proprities of the Kafka Producer
         final Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "10.21.62.48:9092");
         props.put(ProducerConfig.RETRIES_CONFIG, "3");
@@ -62,10 +67,7 @@ public final class OMS {
         HashMap<String, String> kafkaParams = new HashMap<String, String>();
         kafkaParams.put("metadata.broker.list", brokers);
 
-        //JavaDStream<byte[]> test = ssc.binaryRecordsStream("hdfs://10.21.62.48:9000/user/moncef.bettaeib/streams/", 10000);
-
-        //test.print();
-        //System.out.printf("%s \n", test.count());
+        //create the Kafka direct Stream
         JavaPairInputDStream<String, String> messages = KafkaUtils.createDirectStream(
                 ssc,
                 String.class,
@@ -76,26 +78,13 @@ public final class OMS {
                 topicsSet
         );
 
-
+        // treat the events send by Kafka
         JavaDStream<String> events = messages.map(new Function<Tuple2<String, String>, String>() {
             public String call(Tuple2<String, String> tuple2) {
                 try {
-
-// TODO add d0ecompression
-//                    InputStream stream = new ByteArrayInputStream(
-//                            tuple2._2().getBytes("UTF-8")
-//                    );
-//                    XZInputStream inxz = new XZInputStream(stream);
-//                    //outString = inxz.toString();
-//
-//                    byte firstByte = (byte) inxz.read();
-//                    byte[] buffer = new byte[inxz.available()];
-//                    buffer[0] = firstByte;
-//                    inxz.read(buffer, 1, buffer.length - 2);
-//                    inxz.close();
-//                    return new String(buffer);
-
+                    // Create à Json object from the String send by Kafka
                     JSONObject obj = new JSONObject(tuple2._2());
+                    // Parse the Json Object
                     String status = obj.getString("status");
                     String date = obj.getJSONObject("end").getString("$date");
                     String gpk = "";
@@ -107,8 +96,9 @@ public final class OMS {
                     String extTemp = obj.getJSONObject("values").getString("exttemp");
                     String taskId = obj.getJSONObject("taskid").getString("$oid");
                     String factor = obj.getString("factor");
+                    // Create the string to be sended to kafka
                     String result = status + "," + date + "," + gpk + "," + rms + "," + pom + "," + extTemp + "," + taskId + "," + factor;
-
+                    // Create the producer and send the event
                     KafkaProducer producer = new KafkaProducer<String, String>(props);
                     producer.send(new ProducerRecord<String, String>("events",
                             result));
@@ -121,7 +111,7 @@ public final class OMS {
 
 
         //System.out.format("%s\n", events.count());
-
+        // Create the JavaDS alerts
         JavaDStream<String> alerts = events
                 .flatMap(new FlatMapFunction<String, String>() {
                     public Iterable<String> call(String x) {
@@ -135,8 +125,10 @@ public final class OMS {
                 Connection mcConnect = null;
                 PreparedStatement st = null;
                 try {
+                    // Create the connection to mysql
                     mcConnect = DriverManager.getConnection(
                             "jdbc:mysql://10.21.62.49/ocp_maint", "root", "SPLXP026");
+                    // create the query
                     String query = "SELECT * FROM Alert WHERE idPom = ?";
                     List<String> list = rdd.collect();
                     if (list.size() > 0) {
@@ -145,6 +137,7 @@ public final class OMS {
                             //System.out.format("%s\n", value);
                             Alert = "";
                             st = mcConnect.prepareStatement(query);
+                            // split the string event to tab of strings
                             String[] values = value.split(",");
                             if (values.length > 4) {
                                 String date = values[1];
@@ -155,6 +148,7 @@ public final class OMS {
                                 st.setString(1, pom);
                                 ResultSet rs = st.executeQuery();
                                 while (rs.next()) {
+                                    // Take the values from th alert table
                                     int idArlert = rs.getInt("idAlert");
                                     String idPom = rs.getString("idPom");
                                     Date dateAlert = rs.getDate("dateAlert");
@@ -170,11 +164,8 @@ public final class OMS {
                                     Float rmsAlertMin = rs.getFloat("RmsAlertMin");
                                     Float rmsEmergMax = rs.getFloat("RmsEmergMax");
                                     Float rmsEmergMin = rs.getFloat("RmsEmergMin");
-//                                    System.out.format("%s, %s, %s,%s, %s, %s,%s, %s, %s,%s, %s, %s, %s, %s, %s\n", idArlert, idPom, dateAlert,
-//                                            gpkAlertMax, gpkAlertMin, gpkEmergMax, gpkEmergMin,
-//                                            tempAlertMax, tempAlertMin, tempEmergMax, tempEmergMin,
-//                                            rmsAlertMax, rmsAlertMin, rmsEmergMax, rmsEmergMin);
                                     Alert += idPom + "," + date;
+                                    // Compare the the values to Alert thresholds
                                     if (temperature >= tempAlertMax) Alert += "," + String.valueOf("1");
                                     else Alert += "," + String.valueOf("0");
                                     if (temperature <= tempAlertMin) Alert += "," + String.valueOf("1");
@@ -202,6 +193,7 @@ public final class OMS {
                                 }
                             }
                         }
+                        // Send the alert event to alerts topic
                         KafkaProducer producer = new KafkaProducer<String, String>(props);
                         producer.send(new ProducerRecord<String, String>("alerts",
                                 Alert));
